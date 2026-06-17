@@ -25,6 +25,9 @@
             </a>
             <span class="text-gray-300">/</span>
             <span id="breadcrumb-name" class="text-sm text-gray-700 font-semibold truncate max-w-xs"></span>
+            <a id="edit-btn" href="#" class="ml-auto flex items-center gap-2 text-xs font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg px-3 py-1.5 transition-colors hidden">
+                <i class="fa-solid fa-pen-to-square"></i> Chỉnh sửa
+            </a>
         </div>
     </div>
 
@@ -203,6 +206,9 @@
             document.getElementById('company-name').textContent = c.name || 'Chưa đặt tên';
             document.getElementById('breadcrumb-name').textContent = c.name || '';
             document.title = (c.name || 'Chi tiết DN') + ' – Doanh Nghiệp';
+            const editBtn = document.getElementById('edit-btn');
+            editBtn.href = `index.html?edit=${c.id}`;
+            editBtn.classList.remove('hidden');
 
             // Meta
             const metaParts = [];

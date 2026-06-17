@@ -334,6 +334,8 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhhcG9idXh3eHhpcWt5cWNkaWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2ODAyMzQsImV4cCI6MjA5NzI1NjIzNH0.CSj0iAI9Jp5_upgN-OqGlvA7j8OaTHafERHkGDYPcns';
         const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         let currentCompanyId = null;
+        let editMode = false;
+        let existingCompanyData = null;
 
         async function uploadFile(file, folder) {
             if (!file || file.size === 0) return null;
@@ -345,9 +347,11 @@
         }
 
         async function collectCompanyData() {
+            const bannerFile = document.getElementById('banner_upload').files[0];
+            const logoFile = document.getElementById('logo_upload').files[0];
             const [bannerUrl, logoUrl] = await Promise.all([
-                uploadFile(document.getElementById('banner_upload').files[0], 'banners'),
-                uploadFile(document.getElementById('logo_upload').files[0], 'logos'),
+                bannerFile ? uploadFile(bannerFile, 'banners') : (existingCompanyData?.banner_url || null),
+                logoFile ? uploadFile(logoFile, 'logos') : (existingCompanyData?.logo_url || null),
             ]);
 
             const websites = Array.from(document.querySelectorAll('#links-container input[type="url"]'))
@@ -360,8 +364,8 @@
                 if (!stdName) continue;
                 factoryStandards.push({
                     name: stdName,
-                    logo_url: await uploadFile(inputs[1].files[0], 'standards'),
-                    certificate_url: await uploadFile(inputs[2].files[0], 'standards'),
+                    logo_url: inputs[1].files[0] ? await uploadFile(inputs[1].files[0], 'standards') : (el.dataset.existingLogoUrl || null),
+                    certificate_url: inputs[2].files[0] ? await uploadFile(inputs[2].files[0], 'standards') : (el.dataset.existingCertUrl || null),
                 });
             }
 
@@ -372,8 +376,8 @@
                 if (!stdName) continue;
                 otherStandards.push({
                     name: stdName,
-                    logo_url: await uploadFile(inputs[1].files[0], 'standards'),
-                    certificate_url: await uploadFile(inputs[2].files[0], 'standards'),
+                    logo_url: inputs[1].files[0] ? await uploadFile(inputs[1].files[0], 'standards') : (el.dataset.existingLogoUrl || null),
+                    certificate_url: inputs[2].files[0] ? await uploadFile(inputs[2].files[0], 'standards') : (el.dataset.existingCertUrl || null),
                 });
             }
 
@@ -386,9 +390,14 @@
             if (industryOther && !industryOther.disabled && industryOther.value.trim())
                 industries.push(industryOther.value.trim());
 
+            const existingContacts = existingCompanyData?.contacts || [];
             const contacts = [];
+            let ci = 0;
             for (const el of document.querySelectorAll('#contact-list .contact-item')) {
-                const photoUrl = await uploadFile(el.querySelector('input[type="file"]').files[0], 'contacts');
+                const fileInput = el.querySelector('input[type="file"]');
+                const photoUrl = fileInput?.files[0]
+                    ? await uploadFile(fileInput.files[0], 'contacts')
+                    : (existingContacts[ci]?.photo_url || null);
                 contacts.push({
                     photo_url: photoUrl,
                     full_name: el.querySelector('.contact-name-input')?.value.trim() || '',
@@ -396,6 +405,7 @@
                     phone: el.querySelector('.contact-phone-input')?.value.trim() || '',
                     email: el.querySelector('.contact-email-input')?.value.trim() || '',
                 });
+                ci++;
             }
 
             return {
@@ -435,11 +445,16 @@
 
         async function collectProductData(pId) {
             const block = document.getElementById(`product_block_${pId}`);
+            const ex = block?.dataset.existingData ? JSON.parse(block.dataset.existingData) : {};
+            const imgMain = document.getElementById(`img_main_${pId}`)?.files[0];
+            const imgS1   = document.getElementById(`img_sub1_${pId}`)?.files[0];
+            const imgS2   = document.getElementById(`img_sub2_${pId}`)?.files[0];
+            const imgS3   = document.getElementById(`img_sub3_${pId}`)?.files[0];
             const [mainUrl, s1Url, s2Url, s3Url] = await Promise.all([
-                uploadFile(document.getElementById(`img_main_${pId}`)?.files[0], 'products'),
-                uploadFile(document.getElementById(`img_sub1_${pId}`)?.files[0], 'products'),
-                uploadFile(document.getElementById(`img_sub2_${pId}`)?.files[0], 'products'),
-                uploadFile(document.getElementById(`img_sub3_${pId}`)?.files[0], 'products'),
+                imgMain ? uploadFile(imgMain, 'products') : (ex.image_main_url || null),
+                imgS1   ? uploadFile(imgS1,   'products') : ((ex.image_sub_urls||[])[0] || null),
+                imgS2   ? uploadFile(imgS2,   'products') : ((ex.image_sub_urls||[])[1] || null),
+                imgS3   ? uploadFile(imgS3,   'products') : ((ex.image_sub_urls||[])[2] || null),
             ]);
 
             const INCOTERMS = ['FOB','CIF','CFR','EXW','DAP / DDP','FCA'];
@@ -459,7 +474,8 @@
             const nutriType = block.querySelector(`input[name="nutri_type_${pId}"]:checked`)?.value || 'file';
             let nutriFileUrl = null, nutriTableData = null;
             if (nutriType === 'file') {
-                nutriFileUrl = await uploadFile(document.getElementById(`nutri_file_input_${pId}`)?.files[0], 'nutritional');
+                const nutriFile = document.getElementById(`nutri_file_input_${pId}`)?.files[0];
+                nutriFileUrl = nutriFile ? await uploadFile(nutriFile, 'nutritional') : (ex.nutritional_file_url || null);
             } else {
                 nutriTableData = extractNutriTableData(pId);
             }
@@ -577,7 +593,10 @@
                     document.getElementById('page-2-products').classList.remove('hidden');
                     document.getElementById('page-2-products').classList.add('block');
                     window.scrollTo(0, 0);
-                    if (productIndex === 0) addNewProductBlock();
+                    if (productIndex === 0) {
+                        if (editMode) loadProductsForEdit(currentCompanyId);
+                        else addNewProductBlock();
+                    }
                 });
             } catch (err) {
                 console.error(err);
@@ -599,16 +618,27 @@
             showLoadingModal('Đang tải file và lưu sản phẩm...');
             try {
                 const productData = await collectProductData(pId);
-                const { data: inserted, error } = await db.from('products').insert({ ...productData, company_id: currentCompanyId }).select('id').single();
-                if (error) throw error;
+                const block = document.getElementById(`product_block_${pId}`);
+                const existingProductId = block?.dataset.productId;
+
+                if (existingProductId) {
+                    const { error } = await db.from('products').update(productData).eq('id', existingProductId);
+                    if (error) throw error;
+                } else {
+                    const { data: inserted, error } = await db.from('products').insert({ ...productData, company_id: currentCompanyId }).select('id').single();
+                    if (error) throw error;
+                    if (inserted) block.dataset.productId = inserted.id;
+                }
+
                 toggleProduct(pId, true);
                 document.getElementById(`status_check_${pId}`)?.classList.remove('hidden');
-                document.getElementById(`product_block_${pId}`)?.classList.replace('border-green-200', 'border-gray-200');
-                document.getElementById(`product_block_${pId}`)?.classList.replace('shadow-lg', 'shadow-sm');
+                block?.classList.replace('border-green-200', 'border-gray-200');
+                block?.classList.replace('shadow-lg', 'shadow-sm');
+                const action = existingProductId ? 'Cập nhật' : 'Lưu';
                 showSuccessModal(
-                    'Lưu sản phẩm thành công!',
-                    `"${nameVal}" đã được lưu. Bạn có thể tiếp tục nhập sản phẩm mới bên dưới.`,
-                    () => { addNewProductBlock(); }
+                    `${action} sản phẩm thành công!`,
+                    `"${nameVal}" đã được ${action.toLowerCase()}. Bạn có thể tiếp tục ${existingProductId ? 'chỉnh sửa sản phẩm khác' : 'nhập sản phẩm mới bên dưới'}.`,
+                    () => { if (!existingProductId) addNewProductBlock(); }
                 );
             } catch (err) {
                 console.error(err);
@@ -624,6 +654,7 @@
                 showErrorModal('Chưa lưu hồ sơ doanh nghiệp. Vui lòng quay lại Bước 1 và lưu hồ sơ trước!');
                 return;
             }
+            // Tìm các sản phẩm chưa lưu (chưa có dấu check xanh)
             const unsaved = [];
             document.querySelectorAll('[id^="product_block_"]').forEach(block => {
                 const pId = parseInt(block.id.replace('product_block_', ''));
@@ -1213,6 +1244,177 @@
                 }
             }
         }
+
+        // ── EDIT MODE ────────────────────────────────────────────────
+        async function initEditMode() {
+            const editId = new URLSearchParams(location.search).get('edit');
+            if (!editId) return;
+            editMode = true;
+            currentCompanyId = editId;
+
+            const banner = document.createElement('div');
+            banner.className = 'bg-amber-50 border-b border-amber-300 text-center py-2 text-sm text-amber-800 font-semibold sticky top-0 z-50';
+            banner.innerHTML = '<i class="fa-solid fa-pen-to-square mr-2"></i>Chế độ chỉnh sửa — thay đổi sẽ cập nhật hồ sơ hiện có';
+            document.body.insertBefore(banner, document.body.firstChild);
+
+            const { data, error } = await db.from('companies').select('*').eq('id', editId).single();
+            if (error || !data) { showErrorModal('Không tìm thấy doanh nghiệp với ID này!'); return; }
+            existingCompanyData = data;
+            fillCompanyForm(data);
+        }
+
+        function fillCompanyForm(d) {
+            const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+            set('inp_company_name', d.name);
+            set('inp_country', d.country);
+            set('inp_province', d.province);
+            set('inp_address', d.address);
+            set('inp_founded_year', d.founded_year);
+            set('inp_phone', d.phone);
+            set('inp_avg_revenue', d.avg_revenue);
+            set('inp_employees_full', d.employees_full_time);
+            set('inp_employees_part', d.employees_part_time);
+            set('about_us_textarea', d.about_us);
+
+            if (d.banner_url) {
+                document.getElementById('banner_preview').src = d.banner_url;
+                document.getElementById('banner_preview').classList.remove('hidden');
+                document.getElementById('banner_placeholder').classList.add('hidden');
+            }
+            if (d.logo_url) {
+                document.getElementById('logo_preview').src = d.logo_url;
+                document.getElementById('logo_preview').classList.remove('hidden');
+                document.getElementById('logo_placeholder').classList.add('hidden');
+            }
+
+            const linkInputs = document.querySelectorAll('#links-container input[type="url"]');
+            (d.websites || []).forEach((url, i) => {
+                if (i === 0 && linkInputs[0]) { linkInputs[0].value = url; }
+                else { addLink(); document.querySelectorAll('#links-container input[type="url"]')[i].value = url; }
+            });
+
+            companyTags = [...(d.tags || [])];
+            renderCompanyTags();
+
+            (d.value_chain || []).forEach(val => {
+                document.querySelectorAll('#value-chain-section input[type="checkbox"]').forEach(cb => {
+                    if (cb.closest('label')?.querySelector('span')?.textContent.trim() === val) cb.checked = true;
+                });
+            });
+            (d.industries || []).forEach(ind => {
+                document.querySelectorAll('#industry-section input[type="checkbox"]').forEach(cb => {
+                    if (cb.value === ind) cb.checked = true;
+                });
+            });
+
+            (d.contacts || []).forEach((ct, i) => {
+                if (i > 0) addContact();
+                const items = document.querySelectorAll('#contact-list .contact-item');
+                const item = items[i]; if (!item) return;
+                if (ct.photo_url) {
+                    const fid = item.querySelector('input[type="file"]').id;
+                    const prevId = fid.replace('contact_img_', 'contact_preview_');
+                    const phId = fid.replace('contact_img_', 'contact_placeholder_');
+                    const prev = document.getElementById(prevId);
+                    const ph = document.getElementById(phId);
+                    if (prev) { prev.src = ct.photo_url; prev.classList.remove('hidden'); }
+                    if (ph) ph.style.display = 'none';
+                }
+                if (item.querySelector('.contact-name-input')) item.querySelector('.contact-name-input').value = ct.full_name || '';
+                if (item.querySelector('.contact-position-input')) item.querySelector('.contact-position-input').value = ct.position || '';
+                if (item.querySelector('.contact-phone-input')) item.querySelector('.contact-phone-input').value = ct.phone || '';
+                if (item.querySelector('.contact-email-input')) item.querySelector('.contact-email-input').value = ct.email || '';
+            });
+
+            (d.factory_standards || []).forEach(std => {
+                addStandard('factory');
+                const els = document.querySelectorAll('#factory-standards-container > div');
+                const el = els[els.length - 1];
+                el.querySelectorAll('input[type="text"]')[0].value = std.name || '';
+                if (std.logo_url) el.dataset.existingLogoUrl = std.logo_url;
+                if (std.certificate_url) el.dataset.existingCertUrl = std.certificate_url;
+            });
+            (d.other_standards || []).forEach(std => {
+                addStandard('product');
+                const els = document.querySelectorAll('#product-standards-container > div');
+                const el = els[els.length - 1];
+                el.querySelectorAll('input[type="text"]')[0].value = std.name || '';
+                if (std.logo_url) el.dataset.existingLogoUrl = std.logo_url;
+                if (std.certificate_url) el.dataset.existingCertUrl = std.certificate_url;
+            });
+        }
+
+        async function loadProductsForEdit(companyId) {
+            const { data: products, error } = await db.from('products').select('*').eq('company_id', companyId).order('created_at');
+            if (error || !products?.length) { addNewProductBlock(); return; }
+            products.forEach(p => {
+                addNewProductBlock();
+                const pId = productIndex;
+                const block = document.getElementById(`product_block_${pId}`);
+                block.dataset.productId = p.id;
+                block.dataset.existingData = JSON.stringify({
+                    image_main_url: p.image_main_url,
+                    image_sub_urls: p.image_sub_urls || [],
+                    nutritional_file_url: p.nutritional_file_url,
+                });
+                fillProductForm(pId, p);
+                document.getElementById(`status_check_${pId}`)?.classList.remove('hidden');
+                toggleProduct(pId, true);
+            });
+            addNewProductBlock();
+        }
+
+        function fillProductForm(pId, p) {
+            const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
+            const block = document.getElementById(`product_block_${pId}`);
+            set(`name_${pId}`, p.name);
+            const td = document.getElementById(`title_display_${pId}`);
+            if (td) td.innerText = p.name || 'Chưa đặt tên';
+
+            if (p.image_main_url) {
+                const prev = document.getElementById(`preview_main_${pId}`);
+                if (prev) { prev.src = p.image_main_url; prev.classList.remove('hidden'); document.getElementById(`placeholder_main_${pId}`)?.classList.add('hidden'); }
+            }
+            (p.image_sub_urls || []).forEach((url, i) => {
+                if (!url) return;
+                const prev = document.getElementById(`preview_sub${i+1}_${pId}`);
+                const ph = document.getElementById(`placeholder_sub${i+1}_${pId}`);
+                if (prev) { prev.src = url; prev.classList.remove('hidden'); }
+                if (ph) ph.style.display = 'none';
+            });
+
+            set(`retail_pack_${pId}`, p.retail_pack);
+            set(`carton_pack_${pId}`, p.carton_pack);
+            set(`carton_l_${pId}`, p.carton_length);
+            set(`carton_w_${pId}`, p.carton_width);
+            set(`carton_h_${pId}`, p.carton_height);
+            set(`cbm_${pId}`, p.cbm);
+            set(`net_weight_${pId}`, p.net_weight);
+            set(`gross_weight_${pId}`, p.gross_weight);
+            set(`cartons_per_pallet_${pId}`, p.cartons_per_pallet);
+            set(`loadability_20_${pId}`, p.loadability_20);
+            set(`loadability_40_${pId}`, p.loadability_40);
+            set(`shelf_life_${pId}`, p.shelf_life);
+            set(`storage_cond_${pId}`, p.storage_conditions);
+            set(`prod_capacity_${pId}`, p.production_capacity);
+            set(`supermarket_dist_${pId}`, p.supermarket_distribution);
+            set(`ingredients_${pId}`, p.ingredients);
+            set(`usage_rec_${pId}`, p.usage_recommendations);
+            set(`moq_fcl_qty_${pId}`, p.moq_fcl_qty);
+            set(`moq_lcl_${pId}`, p.moq_lcl);
+            const fcl = document.getElementById(`moq_fcl_type_${pId}`);
+            if (fcl && p.moq_fcl_type) fcl.value = p.moq_fcl_type;
+
+            (p.incoterms || []).forEach(v => { const cb = block?.querySelector(`input[value="${v}"]`); if (cb) cb.checked = true; });
+            (p.ports || []).forEach(v => { const cb = document.getElementById(`ports_container_${pId}`)?.querySelector(`input[value="${v}"]`); if (cb) cb.checked = true; });
+            (p.payment_methods || []).forEach(v => { const cb = block?.querySelector(`input[value="${v}"]`); if (cb) cb.checked = true; });
+            (p.retail_provinces || []).forEach(v => { const cb = document.getElementById(`provinces_container_${pId}`)?.querySelector(`input[value="${v}"]`); if (cb) cb.checked = true; });
+
+            productTagsMap[pId] = [...(p.tags || [])];
+            renderProductTags(pId);
+        }
+
+        initEditMode();
 
         function calculateCBM(pId) {
             const l = parseFloat(document.getElementById(`carton_l_${pId}`).value) || 0;
