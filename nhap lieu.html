@@ -588,28 +588,34 @@
         async function saveAndAddNew(pId) {
             const nameVal = document.getElementById(`name_${pId}`)?.value.trim();
             if (!nameVal) {
-                alert('Vui lòng nhập "Tên sản phẩm" trước khi lưu!');
+                showErrorModal('Vui lòng nhập "Tên sản phẩm" trước khi lưu!');
                 document.getElementById(`name_${pId}`)?.focus();
                 return;
             }
             if (!currentCompanyId) {
-                showErrorModal('Chưa có mã công ty. Vui lòng quay lại lưu hồ sơ doanh nghiệp trước!');
+                showErrorModal('Chưa lưu hồ sơ doanh nghiệp. Vui lòng quay lại Bước 1 và bấm "Lưu hồ sơ" trước!');
                 return;
             }
             showLoadingModal('Đang tải file và lưu sản phẩm...');
             try {
                 const productData = await collectProductData(pId);
-                const { error } = await db.from('products').insert({ ...productData, company_id: currentCompanyId });
+                const { data: inserted, error } = await db.from('products').insert({ ...productData, company_id: currentCompanyId }).select('id').single();
                 if (error) throw error;
                 toggleProduct(pId, true);
-                document.getElementById(`status_check_${pId}`).classList.remove('hidden');
-                document.getElementById(`product_block_${pId}`).classList.replace('border-green-200', 'border-gray-200');
-                document.getElementById(`product_block_${pId}`).classList.replace('shadow-lg', 'shadow-sm');
-                document.getElementById('message-modal').classList.add('hidden');
-                addNewProductBlock();
+                document.getElementById(`status_check_${pId}`)?.classList.remove('hidden');
+                document.getElementById(`product_block_${pId}`)?.classList.replace('border-green-200', 'border-gray-200');
+                document.getElementById(`product_block_${pId}`)?.classList.replace('shadow-lg', 'shadow-sm');
+                showSuccessModal(
+                    'Lưu sản phẩm thành công!',
+                    `"${nameVal}" đã được lưu. Bạn có thể tiếp tục nhập sản phẩm mới bên dưới.`,
+                    () => { addNewProductBlock(); }
+                );
             } catch (err) {
                 console.error(err);
-                showErrorModal('Không thể lưu sản phẩm: ' + err.message);
+                const msg = err.message?.includes('relation') || err.message?.includes('does not exist')
+                    ? 'Bảng dữ liệu chưa được tạo. Vui lòng chạy SQL trong Supabase trước!'
+                    : 'Không thể lưu sản phẩm: ' + err.message;
+                showErrorModal(msg);
             }
         }
 
