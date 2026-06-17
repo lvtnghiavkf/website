@@ -1,5 +1,10 @@
 {
-  "buildCommand": null,
-  "outputDirectory": ".",
-  "rewrites": [{ "source": "/", "destination": "/nhap lieu.html" }]
+  "version": 2,
+  "builds": [
+    { "src": "nhap lieu.html", "use": "@vercel/static" }
+  ],
+  "routes": [
+    { "src": "/", "dest": "/nhap lieu.html" },
+    { "src": "/(.*)", "dest": "/$1" }
+  ]
 }
