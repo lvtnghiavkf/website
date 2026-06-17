@@ -613,8 +613,39 @@
             }
         }
 
-        function finishAll() {
-            showSuccessModal('Hoàn tất!', 'Toàn bộ hồ sơ doanh nghiệp và sản phẩm đã được lưu thành công vào hệ thống.', null);
+        async function finishAll() {
+            if (!currentCompanyId) {
+                showErrorModal('Chưa lưu hồ sơ doanh nghiệp. Vui lòng quay lại Bước 1 và lưu hồ sơ trước!');
+                return;
+            }
+            // Tìm các sản phẩm chưa lưu (chưa có dấu check xanh)
+            const unsaved = [];
+            document.querySelectorAll('[id^="product_block_"]').forEach(block => {
+                const pId = parseInt(block.id.replace('product_block_', ''));
+                const nameEl = document.getElementById(`name_${pId}`);
+                const checkEl = document.getElementById(`status_check_${pId}`);
+                if (nameEl && nameEl.value.trim() && checkEl && checkEl.classList.contains('hidden')) {
+                    unsaved.push(pId);
+                }
+            });
+            if (!unsaved.length) {
+                showSuccessModal('Hoàn tất!', 'Tất cả sản phẩm đã được lưu thành công vào hệ thống.', null);
+                return;
+            }
+            showLoadingModal(`Đang lưu ${unsaved.length} sản phẩm...`);
+            try {
+                for (const pId of unsaved) {
+                    const productData = await collectProductData(pId);
+                    const { error } = await db.from('products').insert({ ...productData, company_id: currentCompanyId });
+                    if (error) throw error;
+                    document.getElementById(`status_check_${pId}`)?.classList.remove('hidden');
+                    toggleProduct(pId, true);
+                }
+                showSuccessModal('Hoàn tất!', `Đã lưu thành công ${unsaved.length} sản phẩm vào hệ thống.`, null);
+            } catch (err) {
+                console.error(err);
+                showErrorModal('Không thể lưu sản phẩm: ' + err.message);
+            }
         }
 
         // ── Tags công ty ─────────────────────────────────────────────
