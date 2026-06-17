@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh Sách Doanh Nghiệp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+
+    <header class="bg-white shadow-sm border-b sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-building text-blue-600 text-xl"></i>
+                <h1 class="text-xl font-bold text-gray-800">Danh Sách Doanh Nghiệp</h1>
+            </div>
+            <span id="total-count" class="text-sm text-gray-500 bg-blue-50 px-3 py-1 rounded-full border border-blue-100"></span>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 py-6">
+        <div class="mb-6">
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                <input id="search-input" type="text"
+                    placeholder="Tìm theo tên công ty, tỉnh thành, ngành hàng, tag..."
+                    class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-sm">
+            </div>
+        </div>
+
+        <div id="loading" class="text-center py-24">
+            <i class="fa-solid fa-spinner animate-spin text-4xl text-blue-500 mb-4"></i>
+            <p class="text-gray-500">Đang tải danh sách...</p>
+        </div>
+
+        <div id="empty" class="hidden text-center py-24">
+            <i class="fa-solid fa-building-circle-xmark text-6xl text-gray-300 mb-4"></i>
+            <p class="text-gray-500 text-lg font-medium">Chưa có doanh nghiệp nào</p>
+            <p class="text-gray-400 text-sm mt-1">Hãy nhập liệu tại trang cập nhật hồ sơ</p>
+        </div>
+
+        <div id="no-result" class="hidden text-center py-16">
+            <i class="fa-solid fa-magnifying-glass text-4xl text-gray-300 mb-3"></i>
+            <p class="text-gray-500">Không tìm thấy kết quả phù hợp</p>
+        </div>
+
+        <div id="companies-grid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5"></div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://hapobuxwxxiqkyqcdike.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhhcG9idXh3eHhpcWt5cWNkaWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2ODAyMzQsImV4cCI6MjA5NzI1NjIzNH0.CSj0iAI9Jp5_upgN-OqGlvA7j8OaTHafERHkGDYPcns';
+        const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let allCompanies = [];
+
+        async function loadCompanies() {
+            const { data, error } = await db
+                .from('companies')
+                .select('id, name, province, country, logo_url, banner_url, tags, factory_standards, other_standards, industries')
+                .order('created_at', { ascending: false });
+
+            document.getElementById('loading').classList.add('hidden');
+
+            if (error || !data?.length) {
+                document.getElementById('empty').classList.remove('hidden');
+                return;
+            }
+            allCompanies = data;
+            document.getElementById('total-count').textContent = `${data.length} doanh nghiệp`;
+            renderCompanies(data);
+        }
+
+        function renderCompanies(list) {
+            const grid = document.getElementById('companies-grid');
+            const noResult = document.getElementById('no-result');
+            const empty = document.getElementById('empty');
+
+            if (!list.length) {
+                grid.classList.add('hidden');
+                if (allCompanies.length) { noResult.classList.remove('hidden'); empty.classList.add('hidden'); }
+                else { empty.classList.remove('hidden'); noResult.classList.add('hidden'); }
+                return;
+            }
+
+            noResult.classList.add('hidden');
+            empty.classList.add('hidden');
+            grid.classList.remove('hidden');
+
+            grid.innerHTML = list.map(c => {
+                const allStds = [...(c.factory_standards || []), ...(c.other_standards || [])];
+                const certHTML = allStds.slice(0, 5).map(s =>
+                    s.logo_url
+                        ? `<img src="${s.logo_url}" title="${s.name}" class="h-8 w-8 object-contain rounded-md border border-gray-200 bg-white p-0.5 shadow-sm">`
+                        : `<span class="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-md font-semibold border border-blue-100" title="${s.name}">${s.name.length > 10 ? s.name.slice(0,10)+'…' : s.name}</span>`
+                ).join('');
+                const more = allStds.length > 5 ? `<span class="text-[10px] text-gray-400 font-medium">+${allStds.length - 5}</span>` : '';
+
+                const tagsHTML = (c.tags || []).slice(0, 3).map(t =>
+                    `<span class="text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full border border-gray-200">#${t}</span>`
+                ).join('');
+                const moreTags = (c.tags || []).length > 3 ? `<span class="text-[10px] text-gray-400">+${c.tags.length - 3}</span>` : '';
+
+                const logoEl = c.logo_url
+                    ? `<img src="${c.logo_url}" class="w-full h-full object-cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+                    + `<div class="hidden w-full h-full items-center justify-center"><i class="fa-solid fa-building text-3xl text-gray-300"></i></div>`
+                    : `<div class="w-full h-full flex items-center justify-center"><i class="fa-solid fa-building text-3xl text-gray-300"></i></div>`;
+
+                const bgStyle = c.banner_url
+                    ? `style="background-image:url('${c.banner_url}');background-size:cover;background-position:center"`
+                    : '';
+
+                return `
+                <a href="chi-tiet.html?id=${c.id}" class="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-blue-300 transition-all duration-200 overflow-hidden flex flex-col group cursor-pointer">
+                    <div class="h-24 bg-gradient-to-br from-blue-100 to-indigo-100 flex items-end justify-center pb-0 relative overflow-hidden" ${bgStyle}>
+                        ${c.banner_url ? '<div class="absolute inset-0 bg-black/20"></div>' : ''}
+                        <div class="w-16 h-16 rounded-full border-3 border-white shadow-lg overflow-hidden bg-white flex items-center justify-center relative z-10 mb-[-28px]">
+                            ${logoEl}
+                        </div>
+                    </div>
+                    <div class="pt-9 px-4 pb-4 flex flex-col flex-1">
+                        <h3 class="font-bold text-gray-800 text-sm text-center leading-snug mb-1 group-hover:text-blue-600 transition-colors line-clamp-2">${c.name || 'Chưa đặt tên'}</h3>
+                        ${c.province ? `<p class="text-xs text-gray-500 text-center mb-3 flex items-center justify-center gap-1"><i class="fa-solid fa-location-dot text-blue-400 text-[10px]"></i>${c.province}${c.country && c.country !== 'Việt Nam' ? ', ' + c.country : ''}</p>` : '<div class="mb-3"></div>'}
+                        ${allStds.length ? `<div class="flex items-center gap-1.5 flex-wrap justify-center mb-2 min-h-[24px]">${certHTML}${more}</div>` : ''}
+                        ${(c.tags||[]).length ? `<div class="flex flex-wrap gap-1 mt-auto pt-2 justify-center">${tagsHTML}${moreTags}</div>` : ''}
+                    </div>
+                </a>`;
+            }).join('');
+        }
+
+        let debounceTimer;
+        document.getElementById('search-input').addEventListener('input', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const q = this.value.toLowerCase().trim();
+                if (!q) { renderCompanies(allCompanies); return; }
+                renderCompanies(allCompanies.filter(c =>
+                    (c.name || '').toLowerCase().includes(q) ||
+                    (c.province || '').toLowerCase().includes(q) ||
+                    (c.country || '').toLowerCase().includes(q) ||
+                    (c.industries || []).some(i => i.toLowerCase().includes(q)) ||
+                    (c.tags || []).some(t => t.toLowerCase().includes(q))
+                ));
+            }, 250);
+        });
+
+        loadCompanies();
+    </script>
+</body>
+</html>

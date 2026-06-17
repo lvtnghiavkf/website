@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Doanh Nghiệp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        .tab-btn.active { border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: 700; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+        .prod-img-thumb { cursor: pointer; transition: all .15s; }
+        .prod-img-thumb:hover, .prod-img-thumb.selected { border-color: #2563eb; opacity: 1; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+
+    <!-- Nav -->
+    <div class="bg-white border-b shadow-sm sticky top-0 z-30">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
+            <a href="hien-thi.html" class="text-gray-500 hover:text-blue-600 transition-colors flex items-center gap-2 text-sm font-medium">
+                <i class="fa-solid fa-arrow-left"></i> Danh sách DN
+            </a>
+            <span class="text-gray-300">/</span>
+            <span id="breadcrumb-name" class="text-sm text-gray-700 font-semibold truncate max-w-xs"></span>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading" class="text-center py-32">
+        <i class="fa-solid fa-spinner animate-spin text-4xl text-blue-500 mb-4"></i>
+        <p class="text-gray-500">Đang tải thông tin...</p>
+    </div>
+
+    <!-- Error -->
+    <div id="error-state" class="hidden text-center py-32">
+        <i class="fa-solid fa-circle-exclamation text-5xl text-red-400 mb-4"></i>
+        <p class="text-gray-600 font-medium">Không tìm thấy doanh nghiệp</p>
+        <a href="hien-thi.html" class="mt-4 inline-block text-blue-600 hover:underline text-sm">← Quay lại danh sách</a>
+    </div>
+
+    <!-- Main content -->
+    <div id="main-content" class="hidden max-w-5xl mx-auto px-4 pb-16">
+
+        <!-- Banner + Logo -->
+        <div class="relative">
+            <div id="banner-wrapper" class="w-full h-48 sm:h-64 bg-gradient-to-br from-blue-200 to-indigo-300 overflow-hidden rounded-b-2xl shadow-md">
+                <img id="banner-img" src="" alt="Banner" class="w-full h-full object-cover hidden">
+            </div>
+            <div class="absolute -bottom-10 left-6">
+                <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white shadow-xl overflow-hidden bg-white flex items-center justify-center">
+                    <img id="logo-img" src="" alt="Logo" class="w-full h-full object-cover hidden">
+                    <i id="logo-placeholder" class="fa-solid fa-building text-4xl text-gray-300"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Company Header -->
+        <div class="mt-14 mb-6">
+            <h1 id="company-name" class="text-2xl sm:text-3xl font-bold text-gray-800"></h1>
+            <div id="company-meta" class="flex flex-wrap gap-3 mt-2 text-sm text-gray-500"></div>
+            <div id="company-tags" class="flex flex-wrap gap-2 mt-3"></div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="border-b border-gray-200 mb-6 overflow-x-auto">
+            <div class="flex gap-0 whitespace-nowrap">
+                <button onclick="switchTab('tab-company')" class="tab-btn active px-5 py-3 text-sm text-gray-600 border-b-3 transition-colors hover:text-blue-600" data-tab="tab-company">
+                    <i class="fa-solid fa-building mr-2"></i>Hồ Sơ DN
+                </button>
+                <button onclick="switchTab('tab-products')" class="tab-btn px-5 py-3 text-sm text-gray-600 transition-colors hover:text-blue-600" data-tab="tab-products">
+                    <i class="fa-solid fa-box-open mr-2"></i>Sản Phẩm <span id="product-count-badge" class="ml-1 bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- TAB: Hồ Sơ -->
+        <div id="tab-company" class="tab-panel active space-y-6">
+
+            <!-- Thông tin cơ bản -->
+            <section class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2 border-b pb-2">
+                    <i class="fa-solid fa-circle-info text-blue-500"></i> Thông Tin Cơ Bản
+                </h2>
+                <div id="basic-info-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+            </section>
+
+            <!-- Về chúng tôi -->
+            <section id="about-section" class="hidden bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2 border-b pb-2">
+                    <i class="fa-solid fa-file-lines text-blue-500"></i> Về Chúng Tôi
+                </h2>
+                <p id="about-text" class="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap"></p>
+            </section>
+
+            <!-- Chuỗi giá trị + Ngành hàng -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <section id="value-chain-section" class="hidden bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                    <h2 class="text-base font-bold text-gray-800 mb-3 flex items-center gap-2 border-b pb-2">
+                        <i class="fa-solid fa-link text-blue-500"></i> Chuỗi Giá Trị
+                    </h2>
+                    <div id="value-chain-list" class="flex flex-wrap gap-2"></div>
+                </section>
+                <section id="industries-section" class="hidden bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                    <h2 class="text-base font-bold text-gray-800 mb-3 flex items-center gap-2 border-b pb-2">
+                        <i class="fa-solid fa-boxes-stacked text-blue-500"></i> Ngành Hàng
+                    </h2>
+                    <div id="industries-list" class="flex flex-wrap gap-2"></div>
+                </section>
+            </div>
+
+            <!-- Người liên hệ -->
+            <section id="contacts-section" class="hidden bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2 border-b pb-2">
+                    <i class="fa-solid fa-address-book text-blue-500"></i> Người Liên Hệ
+                </h2>
+                <div id="contacts-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            </section>
+
+            <!-- Tiêu chuẩn -->
+            <section id="standards-section" class="hidden bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                <h2 class="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2 border-b pb-2">
+                    <i class="fa-solid fa-medal text-yellow-500"></i> Tiêu Chuẩn & Chứng Nhận
+                </h2>
+                <div id="standards-factory" class="mb-4"></div>
+                <div id="standards-other"></div>
+            </section>
+        </div>
+
+        <!-- TAB: Sản phẩm -->
+        <div id="tab-products" class="tab-panel">
+            <div id="products-loading" class="text-center py-12">
+                <i class="fa-solid fa-spinner animate-spin text-2xl text-blue-400 mb-2"></i>
+                <p class="text-gray-400 text-sm">Đang tải sản phẩm...</p>
+            </div>
+            <div id="products-empty" class="hidden text-center py-12">
+                <i class="fa-solid fa-box-open text-4xl text-gray-300 mb-3"></i>
+                <p class="text-gray-500">Chưa có sản phẩm nào</p>
+            </div>
+            <div id="products-list" class="space-y-6"></div>
+        </div>
+
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://hapobuxwxxiqkyqcdike.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhhcG9idXh3eHhpcWt5cWNkaWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2ODAyMzQsImV4cCI6MjA5NzI1NjIzNH0.CSj0iAI9Jp5_upgN-OqGlvA7j8OaTHafERHkGDYPcns';
+        const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const id = new URLSearchParams(location.search).get('id');
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+        }
+
+        function infoRow(icon, label, value) {
+            if (!value) return '';
+            return `<div class="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                <i class="${icon} text-blue-400 mt-0.5 w-4 text-center flex-shrink-0"></i>
+                <div><p class="text-[11px] text-gray-400 uppercase font-semibold mb-0.5">${label}</p><p class="text-sm text-gray-700 font-medium">${value}</p></div>
+            </div>`;
+        }
+
+        function badge(text, color = 'blue') {
+            const colors = {
+                blue: 'bg-blue-100 text-blue-700 border-blue-200',
+                green: 'bg-green-100 text-green-700 border-green-200',
+                gray: 'bg-gray-100 text-gray-600 border-gray-200',
+            };
+            return `<span class="inline-block text-xs px-3 py-1 rounded-full border font-medium ${colors[color]}">${text}</span>`;
+        }
+
+        async function load() {
+            if (!id) { showError(); return; }
+
+            const { data: c, error } = await db.from('companies').select('*').eq('id', id).single();
+            document.getElementById('loading').classList.add('hidden');
+
+            if (error || !c) { showError(); return; }
+            document.getElementById('main-content').classList.remove('hidden');
+
+            // Banner
+            if (c.banner_url) {
+                const bImg = document.getElementById('banner-img');
+                bImg.src = c.banner_url;
+                bImg.classList.remove('hidden');
+            }
+
+            // Logo
+            if (c.logo_url) {
+                const lImg = document.getElementById('logo-img');
+                lImg.src = c.logo_url;
+                lImg.classList.remove('hidden');
+                document.getElementById('logo-placeholder').classList.add('hidden');
+            }
+
+            // Name
+            document.getElementById('company-name').textContent = c.name || 'Chưa đặt tên';
+            document.getElementById('breadcrumb-name').textContent = c.name || '';
+            document.title = (c.name || 'Chi tiết DN') + ' – Doanh Nghiệp';
+
+            // Meta
+            const metaParts = [];
+            if (c.province) metaParts.push(`<span class="flex items-center gap-1"><i class="fa-solid fa-location-dot text-blue-400"></i>${c.province}${c.country && c.country !== 'Việt Nam' ? ', '+c.country : ''}</span>`);
+            if (c.founded_year) metaParts.push(`<span class="flex items-center gap-1"><i class="fa-solid fa-calendar text-gray-400"></i>Thành lập ${c.founded_year}</span>`);
+            if (c.phone) metaParts.push(`<span class="flex items-center gap-1"><i class="fa-solid fa-phone text-gray-400"></i>${c.phone}</span>`);
+            document.getElementById('company-meta').innerHTML = metaParts.join('');
+
+            // Tags
+            if (c.tags?.length) {
+                document.getElementById('company-tags').innerHTML = c.tags.map(t => `<span class="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full border border-gray-200">#${t}</span>`).join('');
+            }
+
+            // Basic info
+            const websites = (c.websites || []).map(w => `<a href="${w}" target="_blank" class="text-blue-600 hover:underline block text-sm">${w}</a>`).join('');
+            document.getElementById('basic-info-grid').innerHTML =
+                infoRow('fa-solid fa-globe', 'Quốc gia', c.country) +
+                infoRow('fa-solid fa-map-marker-alt', 'Tỉnh / Thành phố', c.province) +
+                infoRow('fa-solid fa-road', 'Địa chỉ', c.address) +
+                infoRow('fa-solid fa-calendar', 'Năm thành lập', c.founded_year ? String(c.founded_year) : '') +
+                infoRow('fa-solid fa-phone', 'Điện thoại', c.phone) +
+                infoRow('fa-solid fa-chart-line', 'Doanh số TB', c.avg_revenue) +
+                infoRow('fa-solid fa-users', 'Nhân viên chính thức', c.employees_full_time ? `${c.employees_full_time} người` : '') +
+                infoRow('fa-solid fa-user-clock', 'Nhân viên bán thời gian', c.employees_part_time ? `${c.employees_part_time} người` : '') +
+                (websites ? `<div class="sm:col-span-2 flex items-start gap-3 p-3 bg-gray-50 rounded-lg"><i class="fa-solid fa-link text-blue-400 mt-0.5 w-4 text-center flex-shrink-0"></i><div><p class="text-[11px] text-gray-400 uppercase font-semibold mb-0.5">Website / MXH</p>${websites}</div></div>` : '');
+
+            // About
+            if (c.about_us) {
+                document.getElementById('about-text').textContent = c.about_us;
+                document.getElementById('about-section').classList.remove('hidden');
+            }
+
+            // Value chain
+            if (c.value_chain?.length) {
+                document.getElementById('value-chain-list').innerHTML = c.value_chain.map(v => badge(v, 'blue')).join('');
+                document.getElementById('value-chain-section').classList.remove('hidden');
+            }
+
+            // Industries
+            if (c.industries?.length) {
+                document.getElementById('industries-list').innerHTML = c.industries.map(i => badge(i, 'green')).join('');
+                document.getElementById('industries-section').classList.remove('hidden');
+            }
+
+            // Contacts
+            if (c.contacts?.length) {
+                document.getElementById('contacts-list').innerHTML = c.contacts.filter(ct => ct.full_name).map(ct => `
+                    <div class="flex items-center gap-4 p-4 border border-gray-200 rounded-xl bg-gray-50">
+                        <div class="w-14 h-14 rounded-full overflow-hidden flex-shrink-0 border-2 border-white shadow bg-gray-200 flex items-center justify-center">
+                            ${ct.photo_url ? `<img src="${ct.photo_url}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-user text-gray-400 text-xl"></i>`}
+                        </div>
+                        <div class="min-w-0">
+                            <p class="font-bold text-gray-800 text-sm truncate">${ct.full_name}</p>
+                            ${ct.position ? `<p class="text-xs text-gray-500 mb-1">${ct.position}</p>` : ''}
+                            ${ct.phone ? `<p class="text-xs text-gray-600"><i class="fa-solid fa-phone mr-1 text-blue-400"></i>${ct.phone}</p>` : ''}
+                            ${ct.email ? `<p class="text-xs text-gray-600 truncate"><i class="fa-solid fa-envelope mr-1 text-blue-400"></i>${ct.email}</p>` : ''}
+                        </div>
+                    </div>`).join('');
+                document.getElementById('contacts-section').classList.remove('hidden');
+            }
+
+            // Standards
+            const allStds = [...(c.factory_standards||[]), ...(c.other_standards||[])];
+            if (allStds.length) {
+                function renderStds(stds, title) {
+                    if (!stds.length) return '';
+                    return `<div class="mb-4"><h4 class="text-sm font-semibold text-gray-600 mb-3 uppercase tracking-wide">${title}</h4>
+                        <div class="flex flex-wrap gap-4">${stds.map(s => `
+                            <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5 shadow-sm">
+                                ${s.logo_url ? `<img src="${s.logo_url}" class="h-10 w-10 object-contain rounded" alt="${s.name}">` : `<i class="fa-solid fa-medal text-yellow-400 text-xl"></i>`}
+                                <div>
+                                    <p class="text-sm font-semibold text-gray-700">${s.name}</p>
+                                    ${s.certificate_url ? `<a href="${s.certificate_url}" target="_blank" class="text-[11px] text-blue-600 hover:underline"><i class="fa-solid fa-file-pdf mr-1"></i>Xem giấy CN</a>` : ''}
+                                </div>
+                            </div>`).join('')}
+                        </div></div>`;
+                }
+                document.getElementById('standards-factory').innerHTML = renderStds(c.factory_standards||[], 'Tiêu chuẩn nhà xưởng / sản xuất');
+                document.getElementById('standards-other').innerHTML = renderStds(c.other_standards||[], 'Tiêu chuẩn khác');
+                document.getElementById('standards-section').classList.remove('hidden');
+            }
+
+            // Load products
+            loadProducts(c.id);
+        }
+
+        async function loadProducts(companyId) {
+            const { data: products, error } = await db.from('products').select('*').eq('company_id', companyId).order('created_at');
+            document.getElementById('products-loading').classList.add('hidden');
+
+            if (error || !products?.length) {
+                document.getElementById('products-empty').classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('product-count-badge').textContent = products.length;
+            document.getElementById('products-list').innerHTML = products.map((p, idx) => renderProduct(p, idx)).join('');
+        }
+
+        function renderProduct(p, idx) {
+            const images = [p.image_main_url, ...(p.image_sub_urls||[])].filter(Boolean);
+            const imgMain = images[0] || '';
+            const imgThumbs = images.map((src, i) =>
+                `<img src="${src}" class="prod-img-thumb w-14 h-14 sm:w-16 sm:h-16 object-cover rounded-md border-2 ${i===0?'border-blue-500 selected':'border-gray-200'} opacity-80" onclick="switchProdImg(this,'main_img_${p.id}')">`
+            ).join('');
+
+            function specRow(label, value) {
+                return value ? `<tr class="border-b border-gray-100"><td class="py-2 pr-4 text-xs text-gray-500 font-medium w-1/2">${label}</td><td class="py-2 text-xs text-gray-700 font-semibold">${value}</td></tr>` : '';
+            }
+
+            const specs =
+                specRow('Đóng gói lẻ', p.retail_pack) +
+                specRow('Đóng gói thùng', p.carton_pack) +
+                specRow('Trọng lượng Net', p.net_weight) +
+                specRow('Trọng lượng tổng', p.gross_weight) +
+                specRow('Kích thước thùng (m)', p.carton_length ? `${p.carton_length} × ${p.carton_width} × ${p.carton_height}` : '') +
+                specRow('CBM', p.cbm) +
+                specRow('Thùng / Pallet', p.cartons_per_pallet) +
+                specRow('Tải 20\'GP', p.loadability_20) +
+                specRow('Tải 40\'HC', p.loadability_40) +
+                specRow('Hạn sử dụng', p.shelf_life) +
+                specRow('Bảo quản', p.storage_conditions) +
+                specRow('Năng lực SX', p.production_capacity) +
+                specRow('Siêu thị phân phối', p.supermarket_distribution);
+
+            const moqHTML = (p.moq_fcl_qty || p.moq_lcl) ? `
+                <div class="flex gap-3 flex-wrap">
+                    ${p.moq_fcl_qty ? `<div class="bg-blue-50 border border-blue-100 rounded-lg px-4 py-2 text-center"><p class="text-[10px] text-blue-500 uppercase font-semibold">MOQ FCL</p><p class="text-sm font-bold text-blue-700">${p.moq_fcl_qty} × ${p.moq_fcl_type||'20\'GP'}</p></div>` : ''}
+                    ${p.moq_lcl ? `<div class="bg-gray-50 border border-gray-200 rounded-lg px-4 py-2 text-center"><p class="text-[10px] text-gray-500 uppercase font-semibold">MOQ LCL</p><p class="text-sm font-bold text-gray-700">${p.moq_lcl}</p></div>` : ''}
+                </div>` : '';
+
+            const tagsHTML = (p.tags||[]).length ? p.tags.map(t=>`<span class="text-[10px] bg-green-50 text-green-700 border border-green-200 px-2 py-0.5 rounded-full">#${t}</span>`).join('') : '';
+
+            const certsHTML = (p.certifications||[]).length ? p.certifications.map(s=>`
+                <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-xs">
+                    ${s.logo_url ? `<img src="${s.logo_url}" class="h-8 w-8 object-contain rounded">` : `<i class="fa-solid fa-medal text-yellow-400"></i>`}
+                    <div><p class="font-semibold text-gray-700">${s.name}</p>${s.certificate_url?`<a href="${s.certificate_url}" target="_blank" class="text-blue-500 text-[10px] hover:underline">Xem giấy CN</a>`:''}</div>
+                </div>`).join('') : '';
+
+            const nutriHTML = p.nutritional_type === 'file' && p.nutritional_file_url
+                ? `<a href="${p.nutritional_file_url}" target="_blank" class="inline-flex items-center gap-2 text-sm text-blue-600 hover:underline bg-blue-50 border border-blue-100 rounded-lg px-4 py-2"><i class="fa-solid fa-file-arrow-down"></i>Tải file dinh dưỡng</a>`
+                : '';
+
+            return `
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div class="bg-green-50 border-b border-green-100 px-5 py-3 flex items-center justify-between cursor-pointer" onclick="toggleProdCard('prod_body_${p.id}','icon_prod_${p.id}')">
+                    <h3 class="font-bold text-green-800 flex items-center gap-2 text-base">
+                        <i class="fa-solid fa-box-open"></i>
+                        <span>Sản phẩm #${idx+1}: ${p.name || 'Chưa đặt tên'}</span>
+                    </h3>
+                    <i id="icon_prod_${p.id}" class="fa-solid fa-chevron-up text-green-600 transition-transform duration-200"></i>
+                </div>
+                <div id="prod_body_${p.id}" class="p-5 sm:p-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+                        <!-- Images -->
+                        <div class="lg:col-span-4">
+                            <div class="w-full aspect-square rounded-xl overflow-hidden border border-gray-200 bg-gray-50 mb-3 flex items-center justify-center">
+                                ${imgMain ? `<img id="main_img_${p.id}" src="${imgMain}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-image text-5xl text-gray-300"></i>`}
+                            </div>
+                            ${images.length > 1 ? `<div class="flex gap-2 flex-wrap">${imgThumbs}</div>` : ''}
+                            ${tagsHTML ? `<div class="flex flex-wrap gap-1 mt-3">${tagsHTML}</div>` : ''}
+                        </div>
+
+                        <!-- Info -->
+                        <div class="lg:col-span-8 space-y-5">
+
+                            ${specs ? `<div>
+                                <h4 class="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2"><i class="fa-solid fa-ruler-combined text-green-500"></i>Thông số kỹ thuật</h4>
+                                <table class="w-full">${specs}</table>
+                            </div>` : ''}
+
+                            ${(p.incoterms||[]).length || (p.ports||[]).length || (p.payment_methods||[]).length ? `<div>
+                                <h4 class="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2"><i class="fa-solid fa-ship text-blue-500"></i>Xuất khẩu</h4>
+                                <div class="space-y-2">
+                                    ${(p.incoterms||[]).length ? `<div class="flex items-start gap-2"><span class="text-[11px] text-gray-400 font-semibold uppercase w-24 flex-shrink-0 pt-0.5">Incoterms</span><div class="flex flex-wrap gap-1">${p.incoterms.map(v=>`<span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-semibold">${v}</span>`).join('')}</div></div>` : ''}
+                                    ${(p.ports||[]).length ? `<div class="flex items-start gap-2"><span class="text-[11px] text-gray-400 font-semibold uppercase w-24 flex-shrink-0 pt-0.5">Cảng</span><div class="flex flex-wrap gap-1">${p.ports.map(v=>`<span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded">${v}</span>`).join('')}</div></div>` : ''}
+                                    ${(p.payment_methods||[]).length ? `<div class="flex items-start gap-2"><span class="text-[11px] text-gray-400 font-semibold uppercase w-24 flex-shrink-0 pt-0.5">Thanh toán</span><div class="flex flex-wrap gap-1">${p.payment_methods.map(v=>`<span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">${v}</span>`).join('')}</div></div>` : ''}
+                                </div>
+                            </div>` : ''}
+
+                            ${moqHTML ? `<div><h4 class="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2"><i class="fa-solid fa-cubes-stacked text-green-500"></i>MOQ</h4>${moqHTML}</div>` : ''}
+
+                            ${(p.retail_provinces||[]).length ? `<div>
+                                <h4 class="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2"><i class="fa-solid fa-store text-green-500"></i>Bán lẻ tại</h4>
+                                <div class="flex flex-wrap gap-1">${p.retail_provinces.map(pv=>`<span class="text-[11px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded">${pv}</span>`).join('')}</div>
+                            </div>` : ''}
+
+                            ${p.ingredients ? `<div><h4 class="text-sm font-bold text-gray-700 mb-1 flex items-center gap-2"><i class="fa-solid fa-leaf text-green-500"></i>Nguyên liệu</h4><p class="text-sm text-gray-600">${p.ingredients}</p></div>` : ''}
+
+                            ${p.usage_recommendations ? `<div><h4 class="text-sm font-bold text-gray-700 mb-1 flex items-center gap-2"><i class="fa-solid fa-circle-info text-blue-400"></i>Khuyến cáo sử dụng</h4><p class="text-sm text-gray-600 whitespace-pre-wrap">${p.usage_recommendations}</p></div>` : ''}
+
+                            ${nutriHTML ? `<div><h4 class="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2"><i class="fa-solid fa-table text-green-500"></i>Thành phần dinh dưỡng</h4>${nutriHTML}</div>` : ''}
+
+                            ${certsHTML ? `<div><h4 class="text-sm font-bold text-gray-700 mb-2 flex items-center gap-2"><i class="fa-solid fa-medal text-yellow-500"></i>Chứng nhận</h4><div class="flex flex-wrap gap-3">${certsHTML}</div></div>` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function toggleProdCard(bodyId, iconId) {
+            const body = document.getElementById(bodyId);
+            const icon = document.getElementById(iconId);
+            if (body.classList.contains('hidden')) {
+                body.classList.remove('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                body.classList.add('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+
+        function switchProdImg(thumb, mainId) {
+            document.getElementById(mainId).src = thumb.src;
+            thumb.closest('.flex').querySelectorAll('.prod-img-thumb').forEach(t => { t.classList.remove('border-blue-500','selected'); t.classList.add('border-gray-200'); t.style.opacity='0.8'; });
+            thumb.classList.add('border-blue-500','selected');
+            thumb.classList.remove('border-gray-200');
+            thumb.style.opacity='1';
+        }
+
+        function showError() {
+            document.getElementById('loading').classList.add('hidden');
+            document.getElementById('error-state').classList.remove('hidden');
+        }
+
+        load();
+    </script>
+</body>
+</html>
