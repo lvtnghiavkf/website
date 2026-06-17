@@ -6,17 +6,15 @@
     <title>Cập Nhật Hồ Sơ Doanh Nghiệp</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        .image-upload-wrapper:hover .upload-overlay {
-            opacity: 1;
-        }
+        .image-upload-wrapper:hover .upload-overlay { opacity: 1; }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen font-sans">
-    
+
     <!-- TRANG 1: HỒ SƠ DOANH NGHIỆP -->
     <div id="page-1-company" class="block">
-        <!-- Khung chính của trang -->
         <div class="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
             <form id="company-profile-form" class="space-y-8" onsubmit="return false;">
             <div class="text-center mb-8">
@@ -24,7 +22,7 @@
                 <p class="text-gray-500 mt-2">Vui lòng điền đầy đủ các thông tin bên dưới để hoàn thiện hồ sơ của bạn</p>
             </div>
 
-            <!-- 1. Banner Doanh Nghiệp -->
+            <!-- 1. Banner -->
             <section class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
                 <div class="relative w-full h-48 sm:h-64 bg-gray-200 image-upload-wrapper cursor-pointer" onclick="document.getElementById('banner_upload').click()">
                     <img id="banner_preview" src="" alt="Banner Doanh Nghiệp" class="w-full h-full object-cover hidden">
@@ -45,34 +43,31 @@
                     <i class="fa-solid fa-circle-info mr-2 text-blue-500"></i> Thông Tin Cơ Bản
                 </h3>
                 <div class="flex flex-col md:flex-row gap-8">
-                    <!-- Avatar / Logo -->
+                    <!-- Logo -->
                     <div class="flex-shrink-0 flex flex-col items-center md:items-start md:mt-2">
                         <div class="relative w-36 h-36 rounded-full border-4 border-gray-50 shadow-lg bg-gray-100 image-upload-wrapper cursor-pointer overflow-hidden group" onclick="document.getElementById('logo_upload').click()">
-                            <img id="logo_preview" src="" alt="Logo Doanh Nghiệp" class="w-full h-full object-cover hidden">
+                            <img id="logo_preview" src="" alt="Logo" class="w-full h-full object-cover hidden">
                             <div id="logo_placeholder" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400">
                                 <i class="fa-solid fa-building text-4xl mb-1"></i>
                                 <span class="text-[10px] font-semibold uppercase">Tải Logo</span>
                             </div>
-                            <div class="upload-overlay absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 transition-opacity duration-200 text-white text-xs font-medium">
-                                Đổi Logo
-                            </div>
+                            <div class="upload-overlay absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 transition-opacity duration-200 text-white text-xs font-medium">Đổi Logo</div>
                         </div>
                         <input type="file" id="logo_upload" accept="image/*" class="hidden" onchange="previewImage(event, 'logo_preview', 'logo_placeholder')">
                     </div>
 
-                    <!-- Các trường thông tin -->
                     <div class="flex-grow grid grid-cols-1 sm:grid-cols-2 gap-5">
                         <div class="sm:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Tên Doanh Nghiệp</label>
-                            <input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2 border" placeholder="Nhập tên doanh nghiệp đầy đủ...">
+                            <input id="inp_company_name" type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2 border" placeholder="Nhập tên doanh nghiệp đầy đủ...">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Quốc gia</label>
-                            <input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2 border" placeholder="Ví dụ: Việt Nam">
+                            <input id="inp_country" type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2 border" placeholder="Ví dụ: Việt Nam">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Tỉnh / Thành phố</label>
-                            <input list="provinces" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2 border bg-white" placeholder="Chọn hoặc nhập tỉnh thành...">
+                            <input id="inp_province" list="provinces" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2 border bg-white" placeholder="Chọn hoặc nhập tỉnh thành...">
                             <datalist id="provinces">
                                 <option value="An Giang"><option value="Bà Rịa - Vũng Tàu"><option value="Bắc Giang">
                                 <option value="Bắc Kạn"><option value="Bạc Liêu"><option value="Bắc Ninh">
@@ -99,15 +94,15 @@
                         </div>
                         <div class="sm:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Địa chỉ chi tiết <span class="text-xs font-normal text-gray-500 italic">(theo đăng ký kinh doanh)</span></label>
-                            <input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2 border" placeholder="Số nhà, tên đường, phường/xã, quận/huyện...">
+                            <input id="inp_address" type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2 border" placeholder="Số nhà, tên đường, phường/xã, quận/huyện...">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Năm thành lập</label>
-                            <input type="number" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2 border" placeholder="YYYY (Ví dụ: 2010)">
+                            <input id="inp_founded_year" type="number" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2 border" placeholder="YYYY (Ví dụ: 2010)">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Điện thoại liên hệ</label>
-                            <input type="tel" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2 border" placeholder="Số điện thoại tổng đài/công ty...">
+                            <input id="inp_phone" type="tel" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2 border" placeholder="Số điện thoại tổng đài/công ty...">
                         </div>
                         <div class="sm:col-span-2">
                             <div class="flex justify-between items-center mb-1">
@@ -121,14 +116,13 @@
                             </div>
                         </div>
 
-                        <!-- THẺ TAGS CỦA DOANH NGHIỆP -->
+                        <!-- TAGS -->
                         <div class="sm:col-span-2 mt-2 bg-blue-50/50 p-4 rounded-lg border border-blue-100">
-                            <label class="block text-sm font-semibold text-gray-800 mb-1">Thẻ từ khóa (Tags) <span class="text-xs font-normal text-gray-500 italic">(Nhập và nhấn Enter. VD: xuất khẩu, nhập khẩu, ...)</span></label>
+                            <label class="block text-sm font-semibold text-gray-800 mb-1">Thẻ từ khóa (Tags) <span class="text-xs font-normal text-gray-500 italic">(Nhập và nhấn Enter)</span></label>
                             <div class="p-2 w-full border border-gray-300 rounded-md shadow-sm focus-within:ring-1 focus-within:ring-blue-500 focus-within:border-blue-500 bg-white flex flex-wrap gap-2 min-h-[42px] cursor-text" id="company-tags-container" onclick="document.getElementById('company-tag-input').focus()">
                                 <input type="text" id="company-tag-input" class="flex-1 outline-none min-w-[150px] text-sm bg-transparent border-none focus:ring-0 p-1" placeholder="Thêm tag liên quan...">
                             </div>
                         </div>
-                        
                     </div>
                 </div>
             </section>
@@ -141,28 +135,24 @@
                 <div class="grid grid-cols-1 gap-6">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Doanh số trung bình (3 năm gần nhất)</label>
-                        <input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2 border" placeholder="Ví dụ: 20 Tỷ VNĐ / năm">
+                        <input id="inp_avg_revenue" type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2 border" placeholder="Ví dụ: 20 Tỷ VNĐ / năm">
                     </div>
-                    
-                    <!-- Nhân viên -->
                     <div class="bg-blue-50/50 p-4 rounded-lg border border-blue-100">
                         <label class="block text-sm font-semibold text-gray-800 mb-3">Số lượng công nhân viên</label>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div class="flex items-center space-x-3 bg-white p-2 rounded border border-gray-200">
                                 <span class="text-sm text-gray-600 font-medium w-28">Chính thức:</span>
-                                <input type="number" min="0" class="flex-1 border-gray-300 rounded shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-1.5 border text-sm" placeholder="Số lượng">
+                                <input id="inp_employees_full" type="number" min="0" class="flex-1 border-gray-300 rounded shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-1.5 border text-sm" placeholder="Số lượng">
                             </div>
                             <div class="flex items-center space-x-3 bg-white p-2 rounded border border-gray-200">
                                 <span class="text-sm text-gray-600 font-medium w-28">Bán thời gian:</span>
-                                <input type="number" min="0" class="flex-1 border-gray-300 rounded shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-1.5 border text-sm" placeholder="Số lượng">
+                                <input id="inp_employees_part" type="number" min="0" class="flex-1 border-gray-300 rounded shadow-sm focus:ring-blue-500 focus:border-blue-500 px-3 py-1.5 border text-sm" placeholder="Số lượng">
                             </div>
                         </div>
                     </div>
-
-                    <!-- Giới thiệu (Textarea) -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Về chúng tôi <span class="text-xs text-gray-500 font-normal italic">(Viết ngắn gọn, tối đa 1000 chữ)</span></label>
-                        <textarea id="about_us_textarea" rows="6" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-3 border" placeholder="Lịch sử hình thành, sứ mệnh, tầm nhìn và giá trị cốt lõi của doanh nghiệp..."></textarea>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Về chúng tôi <span class="text-xs text-gray-500 font-normal italic">(Tối đa 1000 chữ)</span></label>
+                        <textarea id="about_us_textarea" rows="6" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-3 border" placeholder="Lịch sử hình thành, sứ mệnh, tầm nhìn và giá trị cốt lõi..."></textarea>
                         <div class="text-right mt-1 text-xs font-medium text-gray-400" id="word-count">0 / 1000 chữ</div>
                     </div>
                 </div>
@@ -173,26 +163,18 @@
                 <h3 class="text-xl font-semibold border-b pb-2 mb-6 text-gray-800 flex items-center">
                     <i class="fa-solid fa-medal mr-2 text-blue-500"></i> Các Tiêu Chuẩn Đạt Được
                 </h3>
-
-                <!-- Tiêu chuẩn nhà xưởng -->
                 <div class="mb-8 bg-gray-50 p-4 rounded-lg border border-gray-200">
                     <div class="flex justify-between items-center mb-4">
                         <h4 class="font-bold text-gray-700"><i class="fa-solid fa-industry mr-2 text-blue-400"></i> Tiêu chuẩn nhà xưởng / sản xuất</h4>
-                        <button type="button" onclick="addStandard('factory')" class="text-white bg-blue-500 hover:bg-blue-600 shadow-sm px-4 py-1.5 rounded-md text-sm font-medium transition-colors">
-                            <i class="fa-solid fa-plus mr-1"></i> Thêm mới
-                        </button>
+                        <button type="button" onclick="addStandard('factory')" class="text-white bg-blue-500 hover:bg-blue-600 shadow-sm px-4 py-1.5 rounded-md text-sm font-medium transition-colors"><i class="fa-solid fa-plus mr-1"></i> Thêm mới</button>
                     </div>
                     <div id="factory-standards-container" class="space-y-4"></div>
                     <p id="factory-empty" class="text-sm text-gray-400 italic text-center py-6 bg-white rounded border border-dashed border-gray-300">Chưa có tiêu chuẩn nhà xưởng nào. Nhấn "Thêm mới" để cập nhật.</p>
                 </div>
-
-                <!-- Tiêu chuẩn sản phẩm -->
                 <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                     <div class="flex justify-between items-center mb-4">
                         <h4 class="font-bold text-gray-700"><i class="fa-solid fa-box-open mr-2 text-blue-400"></i> Tiêu chuẩn khác</h4>
-                        <button type="button" onclick="addStandard('product')" class="text-white bg-blue-500 hover:bg-blue-600 shadow-sm px-4 py-1.5 rounded-md text-sm font-medium transition-colors">
-                            <i class="fa-solid fa-plus mr-1"></i> Thêm mới
-                        </button>
+                        <button type="button" onclick="addStandard('product')" class="text-white bg-blue-500 hover:bg-blue-600 shadow-sm px-4 py-1.5 rounded-md text-sm font-medium transition-colors"><i class="fa-solid fa-plus mr-1"></i> Thêm mới</button>
                     </div>
                     <div id="product-standards-container" class="space-y-4"></div>
                     <p id="product-empty" class="text-sm text-gray-400 italic text-center py-6 bg-white rounded border border-dashed border-gray-300">Chưa có tiêu chuẩn khác nào. Nhấn "Thêm mới" để cập nhật.</p>
@@ -201,13 +183,12 @@
 
             <!-- 5. Chuỗi Giá Trị & Ngành Hàng -->
             <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Chuỗi giá trị -->
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                     <h3 class="text-xl font-semibold border-b pb-2 mb-4 text-gray-800 flex items-center">
                         <i class="fa-solid fa-link mr-2 text-blue-500"></i> Chuỗi Giá Trị
                     </h3>
                     <p class="text-xs text-gray-500 mb-4">(Có thể tích chọn nhiều mục)</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
+                    <div id="value-chain-section" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
                         <label class="flex items-center space-x-3 cursor-pointer p-2 hover:bg-gray-50 rounded transition-colors"><input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"><span class="text-sm text-gray-700 font-medium">Nông / Trang Trại (Farm)</span></label>
                         <label class="flex items-center space-x-3 cursor-pointer p-2 hover:bg-gray-50 rounded transition-colors"><input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"><span class="text-sm text-gray-700 font-medium">Sản Xuất (Production)</span></label>
                         <label class="flex items-center space-x-3 cursor-pointer p-2 hover:bg-gray-50 rounded transition-colors"><input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500"><span class="text-sm text-gray-700 font-medium">Xử Lý (Processing)</span></label>
@@ -219,25 +200,24 @@
                     </div>
                 </div>
 
-                <!-- Ngành hàng -->
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
                     <h3 class="text-xl font-semibold border-b pb-2 mb-4 text-gray-800 flex items-center">
                         <i class="fa-solid fa-boxes-stacked mr-2 text-blue-500"></i> Ngành Hàng
                     </h3>
                     <p class="text-xs text-gray-500 mb-4">(Cuộn để xem, có thể chọn nhiều)</p>
-                    <div class="h-[380px] overflow-y-auto pr-2 space-y-1 bg-gray-50 p-2 rounded border border-gray-200">
+                    <div id="industry-section" class="h-[380px] overflow-y-auto pr-2 space-y-1 bg-gray-50 p-2 rounded border border-gray-200">
                         <script>
                             const industries = [
-                                "BÁNH KẸO", "THỰC PHẨM ĐÓNG HỘP", "THỰC PHẨM TƯƠI, ĐÔNG LẠNH", "THỰC PHẨM KHÔ, ĐỒ ĂN LIỀN",
-                                "NƯỚC CHẤM GIA VỊ", "SỮA VÀ CÁC SẢN PHẨM TỪ SỮA", "ĐỒ UỐNG KHÔNG CỒN", "ĐỒ UỐNG CÓ CỒN",
-                                "SẢN PHẨM VẢI SỢI", "SẢN PHẨM TỪ CAO SU", "MAY – THÊU", "DA, GIẢ DA", "HÓA MỸ PHẨM",
-                                "HÓA CHẤT DIỆT CÔN TRÙNG", "SẢN PHẨM VỆ SINH", "TRANG SỨC", "DỤNG CỤ LÀM ĐẸP", "DƯỢC PHẨM",
-                                "VĂN PHÒNG PHẨM – VĂN HÓA PHẨM", "SẢN PHẨM QUÀ TẶNG, DỤNG CỤ THỂ THAO, ĐỒ CHƠI",
-                                "VẬT LIỆU XÂY DỰNG", "SƠN, CHẤT CHỐNG THẤM VÀ VẬT LIỆU KHÁC", "NHỰA CÔNG NGHIỆP",
-                                "NHỰA GIA DỤNG", "GỐM SỨ VÀ THỦY TINH", "NỘI THẤT GỖ", "KIM KHÍ GIA DỤNG", "MÁY MÓC GIA DỤNG",
-                                "ĐIỆN GIA DỤNG", "ĐIỆN TỬ GIA DỤNG", "ĐIỆN TỬ KỸ THUẬT CAO", "XE, PHỤ TÙNG XE",
-                                "PHÂN BÓN – THUỐC BẢO VỆ THỰC VẬT", "THỨC ĂN CHĂN NUÔI – THUỐC THÚ Y, THỦY SẢN",
-                                "MÁY MÓC, CÔNG CỤ NÔNG NGƯ NGHIỆP", "SẢN PHẨM DẦU NHỜN, CHẤT ĐỐT", "NÔNG SẢN TƯƠI"
+                                "BÁNH KẸO","THỰC PHẨM ĐÓNG HỘP","THỰC PHẨM TƯƠI, ĐÔNG LẠNH","THỰC PHẨM KHÔ, ĐỒ ĂN LIỀN",
+                                "NƯỚC CHẤM GIA VỊ","SỮA VÀ CÁC SẢN PHẨM TỪ SỮA","ĐỒ UỐNG KHÔNG CỒN","ĐỒ UỐNG CÓ CỒN",
+                                "SẢN PHẨM VẢI SỢI","SẢN PHẨM TỪ CAO SU","MAY – THÊU","DA, GIẢ DA","HÓA MỸ PHẨM",
+                                "HÓA CHẤT DIỆT CÔN TRÙNG","SẢN PHẨM VỆ SINH","TRANG SỨC","DỤNG CỤ LÀM ĐẸP","DƯỢC PHẨM",
+                                "VĂN PHÒNG PHẨM – VĂN HÓA PHẨM","SẢN PHẨM QUÀ TẶNG, DỤNG CỤ THỂ THAO, ĐỒ CHƠI",
+                                "VẬT LIỆU XÂY DỰNG","SƠN, CHẤT CHỐNG THẤM VÀ VẬT LIỆU KHÁC","NHỰA CÔNG NGHIỆP",
+                                "NHỰA GIA DỤNG","GỐM SỨ VÀ THỦY TINH","NỘI THẤT GỖ","KIM KHÍ GIA DỤNG","MÁY MÓC GIA DỤNG",
+                                "ĐIỆN GIA DỤNG","ĐIỆN TỬ GIA DỤNG","ĐIỆN TỬ KỸ THUẬT CAO","XE, PHỤ TÙNG XE",
+                                "PHÂN BÓN – THUỐC BẢO VỆ THỰC VẬT","THỨC ĂN CHĂN NUÔI – THUỐC THÚ Y, THỦY SẢN",
+                                "MÁY MÓC, CÔNG CỤ NÔNG NGƯ NGHIỆP","SẢN PHẨM DẦU NHỜN, CHẤT ĐỐT","NÔNG SẢN TƯƠI"
                             ];
                             document.write(industries.map(ind => `
                                 <label class="flex items-center space-x-3 cursor-pointer p-2 hover:bg-white rounded transition-colors border border-transparent hover:border-gray-200">
@@ -246,8 +226,6 @@
                                 </label>
                             `).join(''));
                         </script>
-                        
-                        <!-- Lựa chọn Khác -->
                         <div class="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 p-2 hover:bg-white rounded transition-colors border border-transparent hover:border-gray-200 mt-2">
                             <label class="flex items-center space-x-3 cursor-pointer">
                                 <input type="checkbox" onchange="toggleOtherIndustry(this)" class="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500">
@@ -267,13 +245,10 @@
                     </h3>
                     <span class="text-sm font-medium bg-blue-100 text-blue-800 py-1 px-3 rounded-full shadow-sm" id="contact-counter">1/3</span>
                 </div>
-                
                 <div id="contact-list" class="space-y-6">
-                    <!-- Liên hệ 1 (Bắt buộc) -->
                     <div class="contact-item relative bg-blue-50/30 p-5 rounded-lg border border-blue-100" id="contact_1">
                         <div class="absolute top-0 left-0 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-br-lg rounded-tl-lg shadow-sm">Người liên hệ 1</div>
                         <div class="grid grid-cols-1 sm:grid-cols-12 gap-6 items-start mt-4">
-                            <!-- Avatar liên hệ -->
                             <div class="sm:col-span-3 flex flex-col items-center">
                                 <div class="relative w-24 h-24 rounded-full overflow-hidden border-2 border-dashed border-gray-300 bg-white hover:bg-gray-50 cursor-pointer flex items-center justify-center group shadow-sm" onclick="document.getElementById('contact_img_1').click()">
                                     <img id="contact_preview_1" src="" class="w-full h-full object-cover hidden">
@@ -282,18 +257,15 @@
                                 <span class="text-[11px] text-gray-500 mt-2 font-medium">Tải ảnh nhân viên</span>
                                 <input type="file" id="contact_img_1" accept="image/*" class="hidden" onchange="previewImage(event, 'contact_preview_1', 'contact_placeholder_1')">
                             </div>
-                            <!-- Thông tin text -->
                             <div class="sm:col-span-9 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div><label class="block text-xs font-medium text-gray-600 mb-1">Họ và Tên</label><input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 px-3 py-2 border text-sm" placeholder="Nhập họ tên..."></div>
-                                <div><label class="block text-xs font-medium text-gray-600 mb-1">Chức vụ</label><input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 px-3 py-2 border text-sm" placeholder="Ví dụ: Giám đốc kinh doanh..."></div>
-                                <div><label class="block text-xs font-medium text-gray-600 mb-1">Điện thoại</label><input type="tel" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 px-3 py-2 border text-sm" placeholder="Số điện thoại di động..."></div>
-                                <div><label class="block text-xs font-medium text-gray-600 mb-1">Email</label><input type="email" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 px-3 py-2 border text-sm" placeholder="Địa chỉ email làm việc..."></div>
+                                <div><label class="block text-xs font-medium text-gray-600 mb-1">Họ và Tên</label><input type="text" class="contact-name-input w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 px-3 py-2 border text-sm" placeholder="Nhập họ tên..."></div>
+                                <div><label class="block text-xs font-medium text-gray-600 mb-1">Chức vụ</label><input type="text" class="contact-position-input w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 px-3 py-2 border text-sm" placeholder="Ví dụ: Giám đốc kinh doanh..."></div>
+                                <div><label class="block text-xs font-medium text-gray-600 mb-1">Điện thoại</label><input type="tel" class="contact-phone-input w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 px-3 py-2 border text-sm" placeholder="Số điện thoại di động..."></div>
+                                <div><label class="block text-xs font-medium text-gray-600 mb-1">Email</label><input type="email" class="contact-email-input w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 px-3 py-2 border text-sm" placeholder="Địa chỉ email làm việc..."></div>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Nút thêm liên hệ -->
                 <div class="mt-6 flex justify-center">
                     <button type="button" id="btn-add-contact" onclick="addContact()" class="inline-flex items-center px-6 py-2.5 border-2 border-dashed border-blue-400 text-sm font-semibold rounded-lg text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors shadow-sm focus:outline-none">
                         <i class="fa-solid fa-plus mr-2"></i> Thêm người liên hệ (Tối đa 3)
@@ -301,7 +273,7 @@
                 </div>
             </section>
 
-            <!-- Các nút Lưu -->
+            <!-- Nút Lưu -->
             <div class="flex flex-col sm:flex-row justify-center md:justify-end gap-4 pt-6 pb-12">
                 <button type="button" onclick="saveAndFinish()" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-bold py-3 px-6 rounded-lg shadow-sm transition-all text-sm sm:text-base flex items-center justify-center">
                     <i class="fa-solid fa-floppy-disk mr-2"></i> LƯU HỒ SƠ & CẬP NHẬT SẢN PHẨM SAU
@@ -311,36 +283,27 @@
                 </button>
             </div>
             </form>
-        </div> <!-- End container trang 1 -->
-    </div> <!-- End Page 1 -->
+        </div>
+    </div>
 
-    <!-- TRANG 2: CẬP NHẬT SẢN PHẨM (Mặc định ẩn) -->
+    <!-- TRANG 2: SẢN PHẨM -->
     <div id="page-2-products" class="hidden pb-20">
-        <!-- Header/Navigation giả lập -->
         <div class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
             <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
                 <button type="button" onclick="goBackToCompany()" class="text-gray-500 hover:text-green-600 transition-colors flex items-center text-sm font-medium">
                     <i class="fa-solid fa-arrow-left mr-2"></i> Quay lại Hồ sơ DN
                 </button>
-                <div class="text-sm font-bold text-green-700 bg-green-50 px-3 py-1 rounded-full border border-green-200">
-                    Bước 2: Sản Phẩm
-                </div>
+                <div class="text-sm font-bold text-green-700 bg-green-50 px-3 py-1 rounded-full border border-green-200">Bước 2: Sản Phẩm</div>
             </div>
         </div>
-
-        <!-- Khung chính -->
         <div class="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8 mt-4">
             <div class="text-center mb-10">
                 <h1 class="text-3xl font-bold text-gray-800 uppercase tracking-wide">Cập Nhật Thông Tin Sản Phẩm</h1>
                 <p class="text-gray-500 mt-2">Đăng tải hình ảnh và thông tin chi tiết về các sản phẩm của bạn</p>
             </div>
-
             <form id="products-form" onsubmit="return false;">
-                <!-- Vùng chứa danh sách các sản phẩm (sẽ được JavaScript thêm vào đây) -->
                 <div id="products-wrapper" class="space-y-6"></div>
             </form>
-
-            <!-- Nút hoàn tất toàn bộ -->
             <div class="mt-10 flex justify-center border-t border-gray-300 pt-8" id="finish-btn-container" style="display: none;">
                 <button type="button" onclick="finishAll()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-12 rounded-xl shadow-xl transition-all transform hover:scale-105 text-lg flex items-center">
                     <i class="fa-solid fa-check-double mr-2"></i> HOÀN TẤT & LƯU TOÀN BỘ SẢN PHẨM
@@ -349,12 +312,12 @@
         </div>
     </div>
 
-    <!-- Modal Thông báo (Thay thế popup mặc định) -->
+    <!-- Modal -->
     <div id="message-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
         <div class="bg-white rounded-xl shadow-2xl p-6 max-w-sm w-full mx-4 transform transition-all">
             <div class="text-center">
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
-                    <i class="fa-solid fa-check text-xl text-green-600"></i>
+                <div id="modal-icon" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                    <i id="modal-icon-inner" class="fa-solid fa-check text-xl text-green-600"></i>
                 </div>
                 <h3 class="text-lg font-bold text-gray-900 mb-2" id="modal-title">Thành công</h3>
                 <p class="text-sm text-gray-500 mb-6" id="modal-message">Nội dung thông báo</p>
@@ -365,206 +328,411 @@
         </div>
     </div>
 
-    <!-- Script xử lý động -->
     <script>
-        // Danh sách tỉnh thành dùng chung
-        const PROVINCES_LIST = ["An Giang", "Bà Rịa - Vũng Tàu", "Bắc Giang", "Bắc Kạn", "Bạc Liêu", "Bắc Ninh", "Bến Tre", "Bình Định", "Bình Dương", "Bình Phước", "Bình Thuận", "Cà Mau", "Cần Thơ", "Cao Bằng", "Đà Nẵng", "Đắk Lắk", "Đắk Nông", "Điện Biên", "Đồng Nai", "Đồng Tháp", "Gia Lai", "Hà Giang", "Hà Nam", "Hà Nội", "Hà Tĩnh", "Hải Dương", "Hải Phòng", "Hậu Giang", "Hòa Bình", "Hưng Yên", "Khánh Hòa", "Kiên Giang", "Kon Tum", "Lai Châu", "Lâm Đồng", "Lạng Sơn", "Lào Cai", "Long An", "Nam Định", "Nghệ An", "Ninh Bình", "Ninh Thuận", "Phú Thọ", "Phú Yên", "Quảng Bình", "Quảng Nam", "Quảng Ngãi", "Quảng Ninh", "Quảng Trị", "Sóc Trăng", "Sơn La", "Tây Ninh", "Thái Bình", "Thái Nguyên", "Thanh Hóa", "Thừa Thiên Huế", "Tiền Giang", "TP Hồ Chí Minh", "Trà Vinh", "Tuyên Quang", "Vĩnh Long", "Vĩnh Phúc", "Yên Bái"];
+        // ── SUPABASE ────────────────────────────────────────────────
+        const SUPABASE_URL = 'https://hapobuxwxxiqkyqcdike.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhhcG9idXh3eHhpcWt5cWNkaWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2ODAyMzQsImV4cCI6MjA5NzI1NjIzNH0.CSj0iAI9Jp5_upgN-OqGlvA7j8OaTHafERHkGDYPcns';
+        const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        let currentCompanyId = null;
 
-        // --- SCRIPT QUẢN LÝ TAGS DOANH NGHIỆP ---
+        async function uploadFile(file, folder) {
+            if (!file || file.size === 0) return null;
+            const ext = file.name.split('.').pop().toLowerCase();
+            const path = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+            const { error } = await db.storage.from('uploads').upload(path, file, { upsert: true });
+            if (error) throw new Error('Upload thất bại: ' + error.message);
+            return db.storage.from('uploads').getPublicUrl(path).data.publicUrl;
+        }
+
+        async function collectCompanyData() {
+            const [bannerUrl, logoUrl] = await Promise.all([
+                uploadFile(document.getElementById('banner_upload').files[0], 'banners'),
+                uploadFile(document.getElementById('logo_upload').files[0], 'logos'),
+            ]);
+
+            const websites = Array.from(document.querySelectorAll('#links-container input[type="url"]'))
+                .map(i => i.value.trim()).filter(Boolean);
+
+            const factoryStandards = [];
+            for (const el of document.querySelectorAll('#factory-standards-container > div')) {
+                const inputs = el.querySelectorAll('input');
+                const stdName = inputs[0].value.trim();
+                if (!stdName) continue;
+                factoryStandards.push({
+                    name: stdName,
+                    logo_url: await uploadFile(inputs[1].files[0], 'standards'),
+                    certificate_url: await uploadFile(inputs[2].files[0], 'standards'),
+                });
+            }
+
+            const otherStandards = [];
+            for (const el of document.querySelectorAll('#product-standards-container > div')) {
+                const inputs = el.querySelectorAll('input');
+                const stdName = inputs[0].value.trim();
+                if (!stdName) continue;
+                otherStandards.push({
+                    name: stdName,
+                    logo_url: await uploadFile(inputs[1].files[0], 'standards'),
+                    certificate_url: await uploadFile(inputs[2].files[0], 'standards'),
+                });
+            }
+
+            const valueChain = Array.from(document.querySelectorAll('#value-chain-section input[type="checkbox"]:checked'))
+                .map(cb => cb.closest('label').querySelector('span').textContent.trim());
+
+            const industries = Array.from(document.querySelectorAll('#industry-section input[type="checkbox"]:checked'))
+                .map(cb => cb.value).filter(Boolean);
+            const industryOther = document.getElementById('industry_other_text');
+            if (industryOther && !industryOther.disabled && industryOther.value.trim())
+                industries.push(industryOther.value.trim());
+
+            const contacts = [];
+            for (const el of document.querySelectorAll('#contact-list .contact-item')) {
+                const photoUrl = await uploadFile(el.querySelector('input[type="file"]').files[0], 'contacts');
+                contacts.push({
+                    photo_url: photoUrl,
+                    full_name: el.querySelector('.contact-name-input')?.value.trim() || '',
+                    position: el.querySelector('.contact-position-input')?.value.trim() || '',
+                    phone: el.querySelector('.contact-phone-input')?.value.trim() || '',
+                    email: el.querySelector('.contact-email-input')?.value.trim() || '',
+                });
+            }
+
+            return {
+                banner_url: bannerUrl,
+                logo_url: logoUrl,
+                name: document.getElementById('inp_company_name').value.trim() || 'Chưa đặt tên',
+                country: document.getElementById('inp_country').value.trim(),
+                province: document.getElementById('inp_province').value.trim(),
+                address: document.getElementById('inp_address').value.trim(),
+                founded_year: parseInt(document.getElementById('inp_founded_year').value) || null,
+                phone: document.getElementById('inp_phone').value.trim(),
+                websites,
+                tags: companyTags,
+                avg_revenue: document.getElementById('inp_avg_revenue').value.trim(),
+                employees_full_time: parseInt(document.getElementById('inp_employees_full').value) || null,
+                employees_part_time: parseInt(document.getElementById('inp_employees_part').value) || null,
+                about_us: document.getElementById('about_us_textarea').value.trim(),
+                factory_standards: factoryStandards,
+                other_standards: otherStandards,
+                value_chain: valueChain,
+                industries,
+                contacts,
+            };
+        }
+
+        async function saveCompanyToDB() {
+            const data = await collectCompanyData();
+            if (currentCompanyId) {
+                const { error } = await db.from('companies').update({ ...data, updated_at: new Date().toISOString() }).eq('id', currentCompanyId);
+                if (error) throw error;
+            } else {
+                const { data: result, error } = await db.from('companies').insert(data).select('id').single();
+                if (error) throw error;
+                currentCompanyId = result.id;
+            }
+        }
+
+        async function collectProductData(pId) {
+            const block = document.getElementById(`product_block_${pId}`);
+            const [mainUrl, s1Url, s2Url, s3Url] = await Promise.all([
+                uploadFile(document.getElementById(`img_main_${pId}`)?.files[0], 'products'),
+                uploadFile(document.getElementById(`img_sub1_${pId}`)?.files[0], 'products'),
+                uploadFile(document.getElementById(`img_sub2_${pId}`)?.files[0], 'products'),
+                uploadFile(document.getElementById(`img_sub3_${pId}`)?.files[0], 'products'),
+            ]);
+
+            const INCOTERMS = ['FOB','CIF','CFR','EXW','DAP / DDP','FCA'];
+            const incoterms = INCOTERMS.filter(v => block.querySelector(`input[value="${v}"]`)?.checked);
+
+            const ports = Array.from(document.getElementById(`ports_container_${pId}`)
+                ?.querySelectorAll('input[type="checkbox"]:checked') || []).map(cb => cb.value);
+
+            const PAYMENTS = ['O/A','D/P, D/A','L/C','T/T advance'];
+            const paymentMethods = PAYMENTS.filter(v => block.querySelector(`input[value="${v}"]`)?.checked);
+            const payOther = document.getElementById(`payment_other_text_${pId}`);
+            if (payOther && !payOther.disabled && payOther.value.trim()) paymentMethods.push(payOther.value.trim());
+
+            const retailProvinces = Array.from(document.getElementById(`provinces_container_${pId}`)
+                ?.querySelectorAll('input[type="checkbox"]:checked') || []).map(cb => cb.value);
+
+            const nutriType = block.querySelector(`input[name="nutri_type_${pId}"]:checked`)?.value || 'file';
+            let nutriFileUrl = null, nutriTableData = null;
+            if (nutriType === 'file') {
+                nutriFileUrl = await uploadFile(document.getElementById(`nutri_file_input_${pId}`)?.files[0], 'nutritional');
+            } else {
+                nutriTableData = extractNutriTableData(pId);
+            }
+
+            const certifications = [];
+            for (const el of (document.getElementById(`standards_container_${pId}`)?.children || [])) {
+                const inputs = el.querySelectorAll('input');
+                const certName = inputs[0]?.value.trim();
+                if (!certName) continue;
+                certifications.push({
+                    name: certName,
+                    logo_url: await uploadFile(inputs[1]?.files[0], 'standards'),
+                    certificate_url: await uploadFile(inputs[2]?.files[0], 'standards'),
+                });
+            }
+
+            return {
+                name: document.getElementById(`name_${pId}`)?.value.trim() || '',
+                image_main_url: mainUrl,
+                image_sub_urls: [s1Url, s2Url, s3Url],
+                retail_pack: document.getElementById(`retail_pack_${pId}`)?.value.trim(),
+                carton_pack: document.getElementById(`carton_pack_${pId}`)?.value.trim(),
+                carton_length: parseFloat(document.getElementById(`carton_l_${pId}`)?.value) || null,
+                carton_width: parseFloat(document.getElementById(`carton_w_${pId}`)?.value) || null,
+                carton_height: parseFloat(document.getElementById(`carton_h_${pId}`)?.value) || null,
+                cbm: parseFloat(document.getElementById(`cbm_${pId}`)?.value) || null,
+                net_weight: document.getElementById(`net_weight_${pId}`)?.value.trim(),
+                gross_weight: document.getElementById(`gross_weight_${pId}`)?.value.trim(),
+                cartons_per_pallet: parseInt(document.getElementById(`cartons_per_pallet_${pId}`)?.value) || null,
+                loadability_20: document.getElementById(`loadability_20_${pId}`)?.value.trim(),
+                loadability_40: document.getElementById(`loadability_40_${pId}`)?.value.trim(),
+                incoterms,
+                ports,
+                payment_methods: paymentMethods,
+                moq_fcl_qty: parseInt(document.getElementById(`moq_fcl_qty_${pId}`)?.value) || null,
+                moq_fcl_type: document.getElementById(`moq_fcl_type_${pId}`)?.value || '',
+                moq_lcl: document.getElementById(`moq_lcl_${pId}`)?.value.trim(),
+                shelf_life: document.getElementById(`shelf_life_${pId}`)?.value.trim(),
+                storage_conditions: document.getElementById(`storage_cond_${pId}`)?.value.trim(),
+                production_capacity: document.getElementById(`prod_capacity_${pId}`)?.value.trim(),
+                supermarket_distribution: document.getElementById(`supermarket_dist_${pId}`)?.value.trim(),
+                retail_provinces: retailProvinces,
+                ingredients: document.getElementById(`ingredients_${pId}`)?.value.trim(),
+                tags: productTagsMap[pId] || [],
+                usage_recommendations: document.getElementById(`usage_rec_${pId}`)?.value.trim(),
+                nutritional_type: nutriType,
+                nutritional_file_url: nutriFileUrl,
+                nutritional_table_data: nutriTableData,
+                certifications,
+            };
+        }
+
+        function extractNutriTableData(pId) {
+            const table = document.getElementById(`nutri_table_${pId}`);
+            if (!table) return null;
+            return Array.from(table.querySelectorAll('tr')).map(tr =>
+                Array.from(tr.querySelectorAll('td')).map(td => ({
+                    content: td.querySelector('div')?.innerHTML || '',
+                    colspan: parseInt(td.getAttribute('colspan') || 1),
+                    rowspan: parseInt(td.getAttribute('rowspan') || 1),
+                }))
+            );
+        }
+
+        // ── Modal helpers ────────────────────────────────────────────
+        function showLoadingModal(msg) {
+            document.getElementById('modal-icon').className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4';
+            document.getElementById('modal-icon-inner').className = 'fa-solid fa-spinner animate-spin text-xl text-blue-600';
+            document.getElementById('modal-title').innerText = 'Đang xử lý...';
+            document.getElementById('modal-message').innerText = msg;
+            document.getElementById('modal-btn').style.display = 'none';
+            document.getElementById('message-modal').classList.remove('hidden');
+        }
+
+        function showSuccessModal(title, msg, callback) {
+            document.getElementById('modal-icon').className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4';
+            document.getElementById('modal-icon-inner').className = 'fa-solid fa-check text-xl text-green-600';
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = msg;
+            const btn = document.getElementById('modal-btn');
+            btn.style.display = 'block';
+            btn.onclick = () => { document.getElementById('message-modal').classList.add('hidden'); if (callback) callback(); };
+            document.getElementById('message-modal').classList.remove('hidden');
+        }
+
+        function showErrorModal(msg) {
+            document.getElementById('modal-icon').className = 'mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4';
+            document.getElementById('modal-icon-inner').className = 'fa-solid fa-times text-xl text-red-600';
+            document.getElementById('modal-title').innerText = 'Có lỗi xảy ra!';
+            document.getElementById('modal-message').innerText = msg;
+            const btn = document.getElementById('modal-btn');
+            btn.style.display = 'block';
+            btn.onclick = () => document.getElementById('message-modal').classList.add('hidden');
+            document.getElementById('message-modal').classList.remove('hidden');
+        }
+
+        // ── Save handlers ────────────────────────────────────────────
+        async function saveAndFinish() {
+            showLoadingModal('Đang tải file và lưu hồ sơ doanh nghiệp...');
+            try {
+                await saveCompanyToDB();
+                showSuccessModal('Lưu thành công!', `Hồ sơ đã được lưu. Mã hồ sơ: ${currentCompanyId}`, null);
+            } catch (err) {
+                console.error(err);
+                showErrorModal('Không thể lưu: ' + err.message);
+            }
+        }
+
+        async function saveAndContinue() {
+            showLoadingModal('Đang tải file và lưu hồ sơ doanh nghiệp...');
+            try {
+                await saveCompanyToDB();
+                showSuccessModal('Lưu thành công!', 'Hồ sơ đã được lưu. Chuyển sang trang cập nhật sản phẩm...', () => {
+                    document.getElementById('page-1-company').classList.replace('block', 'hidden');
+                    document.getElementById('page-2-products').classList.remove('hidden');
+                    document.getElementById('page-2-products').classList.add('block');
+                    window.scrollTo(0, 0);
+                    if (productIndex === 0) addNewProductBlock();
+                });
+            } catch (err) {
+                console.error(err);
+                showErrorModal('Không thể lưu: ' + err.message);
+            }
+        }
+
+        async function saveAndAddNew(pId) {
+            const nameVal = document.getElementById(`name_${pId}`)?.value.trim();
+            if (!nameVal) {
+                alert('Vui lòng nhập "Tên sản phẩm" trước khi lưu!');
+                document.getElementById(`name_${pId}`)?.focus();
+                return;
+            }
+            if (!currentCompanyId) {
+                showErrorModal('Chưa có mã công ty. Vui lòng quay lại lưu hồ sơ doanh nghiệp trước!');
+                return;
+            }
+            showLoadingModal('Đang tải file và lưu sản phẩm...');
+            try {
+                const productData = await collectProductData(pId);
+                const { error } = await db.from('products').insert({ ...productData, company_id: currentCompanyId });
+                if (error) throw error;
+                toggleProduct(pId, true);
+                document.getElementById(`status_check_${pId}`).classList.remove('hidden');
+                document.getElementById(`product_block_${pId}`).classList.replace('border-green-200', 'border-gray-200');
+                document.getElementById(`product_block_${pId}`).classList.replace('shadow-lg', 'shadow-sm');
+                document.getElementById('message-modal').classList.add('hidden');
+                addNewProductBlock();
+            } catch (err) {
+                console.error(err);
+                showErrorModal('Không thể lưu sản phẩm: ' + err.message);
+            }
+        }
+
+        function finishAll() {
+            showSuccessModal('Hoàn tất!', 'Toàn bộ hồ sơ doanh nghiệp và sản phẩm đã được lưu thành công vào hệ thống.', null);
+        }
+
+        // ── Tags công ty ─────────────────────────────────────────────
         let companyTags = [];
         const companyTagInput = document.getElementById('company-tag-input');
         const companyTagsContainer = document.getElementById('company-tags-container');
-
-        if(companyTagInput) {
+        if (companyTagInput) {
             companyTagInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter' || e.key === ',') {
                     e.preventDefault();
-                    const tag = this.value.trim().replace(/^#/, ''); // Bỏ dấu # nếu user lỡ nhập
-                    if (tag && !companyTags.includes(tag)) {
-                        companyTags.push(tag);
-                        renderCompanyTags();
-                    }
+                    const tag = this.value.trim().replace(/^#/, '');
+                    if (tag && !companyTags.includes(tag)) { companyTags.push(tag); renderCompanyTags(); }
                     this.value = '';
                 }
             });
         }
-
-        function removeCompanyTag(index) {
-            companyTags.splice(index, 1);
-            renderCompanyTags();
-        }
-
+        function removeCompanyTag(i) { companyTags.splice(i, 1); renderCompanyTags(); }
         function renderCompanyTags() {
-            // Xóa các badge cũ
-            const existingTags = companyTagsContainer.querySelectorAll('.company-tag-badge');
-            existingTags.forEach(t => t.remove());
-
-            // Render lại mảng
-            companyTags.forEach((tag, index) => {
-                const tagEl = document.createElement('span');
-                tagEl.className = 'company-tag-badge inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800 transition-all';
-                tagEl.innerHTML = `#${tag} <button type="button" class="ml-1.5 inline-flex text-blue-400 hover:text-blue-600 focus:outline-none" onclick="removeCompanyTag(${index})"><i class="fa-solid fa-xmark text-xs"></i></button>`;
-                companyTagsContainer.insertBefore(tagEl, companyTagInput);
+            companyTagsContainer.querySelectorAll('.company-tag-badge').forEach(t => t.remove());
+            companyTags.forEach((tag, i) => {
+                const el = document.createElement('span');
+                el.className = 'company-tag-badge inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800';
+                el.innerHTML = `#${tag} <button type="button" class="ml-1.5 inline-flex text-blue-400 hover:text-blue-600" onclick="removeCompanyTag(${i})"><i class="fa-solid fa-xmark text-xs"></i></button>`;
+                companyTagsContainer.insertBefore(el, companyTagInput);
             });
         }
 
-        // --- SCRIPT QUẢN LÝ TAGS NGUYÊN LIỆU (SẢN PHẨM) ---
-        let productTagsMap = {}; // Lưu tags theo id sản phẩm (pId)
-
+        // ── Tags sản phẩm ────────────────────────────────────────────
+        let productTagsMap = {};
         function handleProductTagInput(e, pId) {
             if (e.key === 'Enter' || e.key === ',') {
                 e.preventDefault();
                 const input = document.getElementById(`product-tag-input-${pId}`);
                 const tag = input.value.trim();
-                if (tag) {
-                    addProductTag(pId, tag);
-                }
+                if (tag) addProductTag(pId, tag);
                 input.value = '';
             }
         }
-
         function addProductTag(pId, tagValue) {
             if (!productTagsMap[pId]) productTagsMap[pId] = [];
-            const tag = tagValue.trim().replace(/^#/, ''); // Bỏ # nếu có
-            
-            // Tránh trùng lặp tag trong cùng 1 sản phẩm
-            if (tag && !productTagsMap[pId].includes(tag)) {
-                productTagsMap[pId].push(tag);
-                renderProductTags(pId);
-            }
+            const tag = tagValue.trim().replace(/^#/, '');
+            if (tag && !productTagsMap[pId].includes(tag)) { productTagsMap[pId].push(tag); renderProductTags(pId); }
         }
-
-        function removeProductTag(pId, index) {
-            if (productTagsMap[pId]) {
-                productTagsMap[pId].splice(index, 1);
-                renderProductTags(pId);
-            }
-        }
-
+        function removeProductTag(pId, i) { if (productTagsMap[pId]) { productTagsMap[pId].splice(i, 1); renderProductTags(pId); } }
         function renderProductTags(pId) {
             const container = document.getElementById(`product-tags-container-${pId}`);
             const input = document.getElementById(`product-tag-input-${pId}`);
-            
-            // Xóa badge cũ
-            const existingTags = container.querySelectorAll('.product-tag-badge');
-            existingTags.forEach(t => t.remove());
-
-            // Render lại
-            if (productTagsMap[pId]) {
-                productTagsMap[pId].forEach((tag, index) => {
-                    const tagEl = document.createElement('span');
-                    tagEl.className = 'product-tag-badge inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200 transition-all';
-                    tagEl.innerHTML = `#${tag} <button type="button" class="ml-1.5 inline-flex text-green-500 hover:text-green-700 focus:outline-none" onclick="removeProductTag(${pId}, ${index})"><i class="fa-solid fa-xmark text-[10px]"></i></button>`;
-                    container.insertBefore(tagEl, input);
-                });
-            }
-        }
-
-
-        // 1. Script hiển thị ảnh Preview (dùng chung cho Banner, Logo, Avatar)
-        function previewImage(event, previewId, placeholderId) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = document.getElementById(previewId);
-                    const placeholder = document.getElementById(placeholderId);
-                    img.src = e.target.result;
-                    img.classList.remove('hidden');
-                    if (placeholder) placeholder.classList.add('hidden');
-                }
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // 2. Tắt bật ô nhập liệu "Ngành hàng Khác"
-        function toggleOtherIndustry(checkbox) {
-            const input = document.getElementById('industry_other_text');
-            if(checkbox.checked) {
-                input.classList.remove('hidden');
-                input.disabled = false;
-                input.focus();
-            } else {
-                input.classList.add('hidden');
-                input.disabled = true;
-                input.value = '';
-            }
-        }
-
-        // 3. Script đếm chữ phần "Về chúng tôi" (max 1000 từ)
-        const textarea = document.getElementById('about_us_textarea');
-        if (textarea) {
-            textarea.addEventListener('input', function() {
-                const text = this.value.trim();
-                const words = text ? text.split(/\s+/).length : 0;
-                const counter = document.getElementById('word-count');
-                counter.innerText = `${words} / 1000 chữ`;
-                
-                if (words > 1000) {
-                    counter.className = "text-right mt-1 text-xs text-red-500 font-bold";
-                } else {
-                    counter.className = "text-right mt-1 text-xs font-medium text-gray-400";
-                }
+            container.querySelectorAll('.product-tag-badge').forEach(t => t.remove());
+            (productTagsMap[pId] || []).forEach((tag, i) => {
+                const el = document.createElement('span');
+                el.className = 'product-tag-badge inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200';
+                el.innerHTML = `#${tag} <button type="button" class="ml-1.5 inline-flex text-green-500 hover:text-green-700" onclick="removeProductTag(${pId}, ${i})"><i class="fa-solid fa-xmark text-[10px]"></i></button>`;
+                container.insertBefore(el, input);
             });
         }
 
-        // 4. Script Thêm / Xóa Tiêu Chuẩn (Nhà xưởng & Sản phẩm)
+        // ── Utilities ────────────────────────────────────────────────
+        function previewImage(event, previewId, placeholderId) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = document.getElementById(previewId);
+                const ph = document.getElementById(placeholderId);
+                img.src = e.target.result;
+                img.classList.remove('hidden');
+                if (ph) ph.classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function toggleOtherIndustry(cb) {
+            const inp = document.getElementById('industry_other_text');
+            if (cb.checked) { inp.classList.remove('hidden'); inp.disabled = false; inp.focus(); }
+            else { inp.classList.add('hidden'); inp.disabled = true; inp.value = ''; }
+        }
+
+        const textarea = document.getElementById('about_us_textarea');
+        if (textarea) {
+            textarea.addEventListener('input', function() {
+                const words = this.value.trim() ? this.value.trim().split(/\s+/).length : 0;
+                const counter = document.getElementById('word-count');
+                counter.innerText = `${words} / 1000 chữ`;
+                counter.className = words > 1000 ? 'text-right mt-1 text-xs text-red-500 font-bold' : 'text-right mt-1 text-xs font-medium text-gray-400';
+            });
+        }
+
+        // ── Tiêu chuẩn ──────────────────────────────────────────────
         function addStandard(type) {
-            const containerId = type === 'factory' ? 'factory-standards-container' : 'product-standards-container';
-            const emptyId = type === 'factory' ? 'factory-empty' : 'product-empty';
-            const id = new Date().getTime();
-            
-            // Ẩn dòng chữ "Chưa có tiêu chuẩn..."
-            document.getElementById(emptyId).style.display = 'none';
-
-            const html = `
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 p-5 border border-gray-300 rounded-lg bg-white relative pr-10 shadow-sm transition-all" id="std_${id}">
-                    <button type="button" onclick="document.getElementById('std_${id}').remove(); checkEmptyStandards('${type}');" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors" title="Xóa tiêu chuẩn này">
-                        <i class="fa-solid fa-trash-can text-lg"></i>
-                    </button>
-                    
-                    <div class="md:col-span-4">
-                        <label class="block text-xs font-semibold text-gray-700 mb-1">Tên tiêu chuẩn</label>
-                        <input type="text" class="w-full border-gray-300 rounded-md px-3 py-2 text-sm border focus:ring-blue-500 shadow-sm" placeholder="VD: ISO 9001, VietGAP...">
-                    </div>
-                    <div class="md:col-span-4">
-                        <label class="block text-xs font-semibold text-gray-700 mb-1">Logo tiêu chuẩn (File PNG)</label>
-                        <input type="file" accept=".png,image/png" class="w-full text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-gray-300 rounded-md bg-white cursor-pointer">
-                    </div>
-                    <div class="md:col-span-4">
-                        <label class="block text-xs font-semibold text-gray-700 mb-1">File Giấy chứng nhận (Ảnh/PDF)</label>
-                        <input type="file" class="w-full text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-gray-300 rounded-md bg-white cursor-pointer">
-                    </div>
-                </div>
-            `;
-            document.getElementById(containerId).insertAdjacentHTML('beforeend', html);
+            const cId = type === 'factory' ? 'factory-standards-container' : 'product-standards-container';
+            const eId = type === 'factory' ? 'factory-empty' : 'product-empty';
+            const id = Date.now();
+            document.getElementById(eId).style.display = 'none';
+            document.getElementById(cId).insertAdjacentHTML('beforeend', `
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 p-5 border border-gray-300 rounded-lg bg-white relative pr-10 shadow-sm" id="std_${id}">
+                    <button type="button" onclick="document.getElementById('std_${id}').remove(); checkEmptyStandards('${type}');" class="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition-colors"><i class="fa-solid fa-trash-can text-lg"></i></button>
+                    <div class="md:col-span-4"><label class="block text-xs font-semibold text-gray-700 mb-1">Tên tiêu chuẩn</label><input type="text" class="w-full border-gray-300 rounded-md px-3 py-2 text-sm border focus:ring-blue-500 shadow-sm" placeholder="VD: ISO 9001, VietGAP..."></div>
+                    <div class="md:col-span-4"><label class="block text-xs font-semibold text-gray-700 mb-1">Logo tiêu chuẩn (PNG)</label><input type="file" accept=".png,image/png" class="w-full text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-gray-300 rounded-md bg-white cursor-pointer"></div>
+                    <div class="md:col-span-4"><label class="block text-xs font-semibold text-gray-700 mb-1">File Giấy chứng nhận (Ảnh/PDF)</label><input type="file" class="w-full text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-gray-300 rounded-md bg-white cursor-pointer"></div>
+                </div>`);
         }
-
         function checkEmptyStandards(type) {
-            const containerId = type === 'factory' ? 'factory-standards-container' : 'product-standards-container';
-            const emptyId = type === 'factory' ? 'factory-empty' : 'product-empty';
-            if (document.getElementById(containerId).children.length === 0) {
-                document.getElementById(emptyId).style.display = 'block';
-            }
+            const cId = type === 'factory' ? 'factory-standards-container' : 'product-standards-container';
+            const eId = type === 'factory' ? 'factory-empty' : 'product-empty';
+            if (!document.getElementById(cId).children.length) document.getElementById(eId).style.display = 'block';
         }
 
-        // 5. Script Thêm / Xóa Người Liên Hệ (Tối đa 3 người)
+        // ── Liên hệ ─────────────────────────────────────────────────
         let contactCount = 1;
         const maxContacts = 3;
-
         function addContact() {
             if (contactCount >= maxContacts) return;
             contactCount++;
-            const id = new Date().getTime();
-
-            const html = `
+            const id = Date.now();
+            document.getElementById('contact-list').insertAdjacentHTML('beforeend', `
                 <div class="contact-item relative bg-blue-50/30 p-5 rounded-lg border border-blue-100 mt-4" id="contact_${id}">
                     <div class="absolute top-0 left-0 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-br-lg rounded-tl-lg shadow-sm">Người liên hệ ${contactCount}</div>
-                    
-                    <button type="button" onclick="removeContact('contact_${id}')" class="absolute -top-3 -right-3 bg-white border border-red-200 text-red-500 hover:bg-red-500 hover:text-white rounded-full w-8 h-8 flex items-center justify-center shadow-md transition-colors z-10" title="Xóa liên hệ này">
-                        <i class="fa-solid fa-times"></i>
-                    </button>
-
+                    <button type="button" onclick="removeContact('contact_${id}')" class="absolute -top-3 -right-3 bg-white border border-red-200 text-red-500 hover:bg-red-500 hover:text-white rounded-full w-8 h-8 flex items-center justify-center shadow-md transition-colors z-10"><i class="fa-solid fa-times"></i></button>
                     <div class="grid grid-cols-1 sm:grid-cols-12 gap-6 items-start mt-4">
                         <div class="sm:col-span-3 flex flex-col items-center">
                             <div class="relative w-24 h-24 rounded-full overflow-hidden border-2 border-dashed border-gray-300 bg-white hover:bg-gray-50 cursor-pointer flex items-center justify-center group shadow-sm" onclick="document.getElementById('contact_img_${id}').click()">
@@ -575,116 +743,48 @@
                             <input type="file" id="contact_img_${id}" accept="image/*" class="hidden" onchange="previewImage(event, 'contact_preview_${id}', 'contact_placeholder_${id}')">
                         </div>
                         <div class="sm:col-span-9 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div><label class="block text-xs font-medium text-gray-600 mb-1">Họ và Tên</label><input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 px-3 py-2 border text-sm" placeholder="Nhập họ tên..."></div>
-                            <div><label class="block text-xs font-medium text-gray-600 mb-1">Chức vụ</label><input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 px-3 py-2 border text-sm" placeholder="Ví dụ: Trưởng phòng..."></div>
-                            <div><label class="block text-xs font-medium text-gray-600 mb-1">Điện thoại</label><input type="tel" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 px-3 py-2 border text-sm" placeholder="Số điện thoại di động..."></div>
-                            <div><label class="block text-xs font-medium text-gray-600 mb-1">Email</label><input type="email" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 px-3 py-2 border text-sm" placeholder="Địa chỉ email làm việc..."></div>
+                            <div><label class="block text-xs font-medium text-gray-600 mb-1">Họ và Tên</label><input type="text" class="contact-name-input w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 px-3 py-2 border text-sm" placeholder="Nhập họ tên..."></div>
+                            <div><label class="block text-xs font-medium text-gray-600 mb-1">Chức vụ</label><input type="text" class="contact-position-input w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 px-3 py-2 border text-sm" placeholder="Ví dụ: Trưởng phòng..."></div>
+                            <div><label class="block text-xs font-medium text-gray-600 mb-1">Điện thoại</label><input type="tel" class="contact-phone-input w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 px-3 py-2 border text-sm" placeholder="Số điện thoại di động..."></div>
+                            <div><label class="block text-xs font-medium text-gray-600 mb-1">Email</label><input type="email" class="contact-email-input w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 px-3 py-2 border text-sm" placeholder="Địa chỉ email làm việc..."></div>
                         </div>
                     </div>
-                </div>
-            `;
-            document.getElementById('contact-list').insertAdjacentHTML('beforeend', html);
+                </div>`);
             updateContactUI();
         }
-
-        function removeContact(id) {
-            document.getElementById(id).remove();
-            contactCount--;
-            reindexContacts();
-            updateContactUI();
-        }
-
+        function removeContact(id) { document.getElementById(id).remove(); contactCount--; reindexContacts(); updateContactUI(); }
         function reindexContacts() {
-            const list = document.getElementById('contact-list');
-            const items = list.querySelectorAll('.contact-item');
-            items.forEach((item, index) => {
+            document.querySelectorAll('#contact-list .contact-item').forEach((item, i) => {
                 const label = item.querySelector('.absolute.top-0.left-0');
-                if (label) {
-                    label.innerText = `Người liên hệ ${index + 1}`;
-                }
+                if (label) label.innerText = `Người liên hệ ${i + 1}`;
             });
         }
-
         function updateContactUI() {
             document.getElementById('contact-counter').innerText = `${contactCount}/${maxContacts}`;
-            const btn = document.getElementById('btn-add-contact');
-            if (contactCount >= maxContacts) {
-                btn.style.display = 'none';
-            } else {
-                btn.style.display = 'inline-flex';
-            }
+            document.getElementById('btn-add-contact').style.display = contactCount >= maxContacts ? 'none' : 'inline-flex';
         }
 
-        // 6. Script Thêm / Xóa Website / Facebook (Tối đa 3 link)
-        let linkCount = 1;
-        const maxLinks = 3;
-
+        // ── Link ─────────────────────────────────────────────────────
+        let linkCount = 1, maxLinks = 3;
         function addLink() {
             if (linkCount >= maxLinks) return;
             linkCount++;
-            const id = new Date().getTime();
-            
-            const html = `
+            const id = Date.now();
+            document.getElementById('links-container').insertAdjacentHTML('beforeend', `
                 <div class="flex items-center space-x-2" id="link_wrapper_${id}">
                     <input type="url" class="flex-1 border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 px-4 py-2 border" placeholder="https://...">
-                    <button type="button" onclick="removeLink('link_wrapper_${id}')" class="text-red-500 hover:text-red-700 px-3 py-2 bg-red-50 rounded-md border border-red-100 hover:bg-red-100 transition-colors" title="Xóa link này">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                </div>
-            `;
-            document.getElementById('links-container').insertAdjacentHTML('beforeend', html);
-            
-            if (linkCount >= maxLinks) {
-                document.getElementById('btn-add-link').style.display = 'none';
-            }
+                    <button type="button" onclick="removeLink('link_wrapper_${id}')" class="text-red-500 hover:text-red-700 px-3 py-2 bg-red-50 rounded-md border border-red-100 hover:bg-red-100 transition-colors"><i class="fa-solid fa-trash-can"></i></button>
+                </div>`);
+            if (linkCount >= maxLinks) document.getElementById('btn-add-link').style.display = 'none';
         }
+        function removeLink(id) { document.getElementById(id).remove(); linkCount--; document.getElementById('btn-add-link').style.display = 'inline-block'; }
 
-        function removeLink(id) {
-            document.getElementById(id).remove();
-            linkCount--;
-            document.getElementById('btn-add-link').style.display = 'inline-block';
-        }
-
-        // 7. Xử lý Modal Thông Báo
-        function showModal(title, message, callback) {
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-message').innerText = message;
-            const modal = document.getElementById('message-modal');
-            const btn = document.getElementById('modal-btn');
-            
-            modal.classList.remove('hidden');
-            
-            btn.onclick = function() {
-                modal.classList.add('hidden');
-                if (callback) callback();
-            };
-        }
-
-        // 8. Xử lý các nút Lưu
-        function saveAndFinish() {
-            showModal('Lưu thành công!', 'Hồ sơ doanh nghiệp của bạn đã được lưu lại. Bạn có thể quay lại cập nhật sản phẩm bất cứ lúc nào.', null);
-        }
-
-        function saveAndContinue() {
-            showModal('Lưu thành công!', 'Hồ sơ đã được lưu. Hệ thống sẽ chuyển bạn đến trang cập nhật sản phẩm ngay bây giờ.', function() {
-                document.getElementById('page-1-company').classList.add('hidden');
-                document.getElementById('page-1-company').classList.remove('block');
-                document.getElementById('page-2-products').classList.remove('hidden');
-                document.getElementById('page-2-products').classList.add('block');
-                window.scrollTo(0, 0);
-                
-                if(productIndex === 0) {
-                    addNewProductBlock();
-                }
-            });
-        }
-
-        // --- CÁC SCRIPT CHO TRANG SẢN PHẨM ---
+        // ── Trang sản phẩm ──────────────────────────────────────────
+        const PROVINCES_LIST = ["An Giang","Bà Rịa - Vũng Tàu","Bắc Giang","Bắc Kạn","Bạc Liêu","Bắc Ninh","Bến Tre","Bình Định","Bình Dương","Bình Phước","Bình Thuận","Cà Mau","Cần Thơ","Cao Bằng","Đà Nẵng","Đắk Lắk","Đắk Nông","Điện Biên","Đồng Nai","Đồng Tháp","Gia Lai","Hà Giang","Hà Nam","Hà Nội","Hà Tĩnh","Hải Dương","Hải Phòng","Hậu Giang","Hòa Bình","Hưng Yên","Khánh Hòa","Kiên Giang","Kon Tum","Lai Châu","Lâm Đồng","Lạng Sơn","Lào Cai","Long An","Nam Định","Nghệ An","Ninh Bình","Ninh Thuận","Phú Thọ","Phú Yên","Quảng Bình","Quảng Nam","Quảng Ngãi","Quảng Ninh","Quảng Trị","Sóc Trăng","Sơn La","Tây Ninh","Thái Bình","Thái Nguyên","Thanh Hóa","Thừa Thiên Huế","Tiền Giang","TP Hồ Chí Minh","Trà Vinh","Tuyên Quang","Vĩnh Long","Vĩnh Phúc","Yên Bái"];
         let productIndex = 0;
 
         function goBackToCompany() {
             document.getElementById('page-2-products').classList.add('hidden');
-            document.getElementById('page-2-products').classList.remove('block');
             document.getElementById('page-1-company').classList.remove('hidden');
             document.getElementById('page-1-company').classList.add('block');
             window.scrollTo(0, 0);
@@ -693,145 +793,129 @@
         function addNewProductBlock() {
             productIndex++;
             const pId = productIndex;
-            
-            // Khởi tạo mảng tags cho sản phẩm này
             productTagsMap[pId] = [];
-
-            const html = `
+            document.getElementById('products-wrapper').insertAdjacentHTML('beforeend', `
             <div id="product_block_${pId}" class="bg-white rounded-xl shadow-lg border border-green-200 overflow-hidden transition-all duration-300">
                 <div class="bg-green-50 px-6 py-4 border-b border-green-100 flex justify-between items-center cursor-pointer hover:bg-green-100 transition-colors" onclick="toggleProduct(${pId})">
                     <h2 class="text-lg font-bold text-green-800 flex items-center">
-                        <i class="fa-solid fa-box-open mr-3"></i> 
+                        <i class="fa-solid fa-box-open mr-3"></i>
                         Sản phẩm #${pId}: <span id="title_display_${pId}" class="ml-2 font-medium text-gray-700">Chưa đặt tên</span>
-                        <i id="status_check_${pId}" class="fa-solid fa-circle-check ml-3 text-green-500 hidden" title="Đã lưu tạm"></i>
+                        <i id="status_check_${pId}" class="fa-solid fa-circle-check ml-3 text-green-500 hidden" title="Đã lưu"></i>
                     </h2>
                     <div>
-                        <button type="button" class="text-green-600 hover:text-green-800 mr-4 p-2" title="Mở rộng/Thu gọn">
-                            <i class="fa-solid fa-chevron-up transition-transform duration-300" id="icon_toggle_${pId}"></i>
-                        </button>
-                        <button type="button" class="text-red-400 hover:text-red-600 p-2" onclick="removeProduct(${pId}); event.stopPropagation();" title="Xóa sản phẩm này">
-                            <i class="fa-solid fa-trash-can"></i>
-                        </button>
+                        <button type="button" class="text-green-600 hover:text-green-800 mr-4 p-2"><i class="fa-solid fa-chevron-up transition-transform duration-300" id="icon_toggle_${pId}"></i></button>
+                        <button type="button" class="text-red-400 hover:text-red-600 p-2" onclick="removeProduct(${pId}); event.stopPropagation();"><i class="fa-solid fa-trash-can"></i></button>
                     </div>
                 </div>
 
                 <div id="product_body_${pId}" class="p-6 block">
                     <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <!-- Hình ảnh -->
                         <div class="lg:col-span-4">
                             <label class="block text-sm font-semibold text-gray-800 mb-3 border-b pb-1">Hình ảnh (1 chính, 3 phụ)</label>
                             <div class="flex flex-col gap-3">
                                 <div class="relative w-full aspect-square bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors group overflow-hidden shadow-sm" onclick="document.getElementById('img_main_${pId}').click()">
                                     <img id="preview_main_${pId}" class="w-full h-full object-cover hidden">
-                                    <div id="placeholder_main_${pId}" class="text-center text-gray-400 group-hover:text-green-500 transition-colors">
-                                        <i class="fa-solid fa-image text-4xl mb-2"></i>
-                                        <p class="text-sm font-medium px-2">Nhấn tải ảnh chính diện</p>
-                                    </div>
+                                    <div id="placeholder_main_${pId}" class="text-center text-gray-400 group-hover:text-green-500 transition-colors"><i class="fa-solid fa-image text-4xl mb-2"></i><p class="text-sm font-medium px-2">Nhấn tải ảnh chính diện</p></div>
                                     <input type="file" id="img_main_${pId}" class="hidden" accept="image/*" onchange="previewImage(event, 'preview_main_${pId}', 'placeholder_main_${pId}')">
                                 </div>
-                                
                                 <div class="grid grid-cols-3 gap-3">
-                                    ${[1, 2, 3].map(i => `
+                                    ${[1,2,3].map(i => `
                                     <div class="relative w-full aspect-square bg-gray-50 border border-dashed border-gray-300 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors group overflow-hidden shadow-sm" onclick="document.getElementById('img_sub${i}_${pId}').click()">
                                         <img id="preview_sub${i}_${pId}" class="w-full h-full object-cover hidden">
                                         <i id="placeholder_sub${i}_${pId}" class="fa-solid fa-plus text-gray-300 group-hover:text-green-500 text-xl transition-colors"></i>
                                         <input type="file" id="img_sub${i}_${pId}" class="hidden" accept="image/*" onchange="previewImage(event, 'preview_sub${i}_${pId}', 'placeholder_sub${i}_${pId}')">
-                                    </div>
-                                    `).join('')}
+                                    </div>`).join('')}
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Thông tin sản phẩm -->
                         <div class="lg:col-span-8 space-y-5">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-800 mb-1">Tên sản phẩm <span class="text-red-500">*</span></label>
                                 <input type="text" id="name_${pId}" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-4 py-2 border bg-white" placeholder="Nhập tên sản phẩm..." oninput="document.getElementById('title_display_${pId}').innerText = this.value || 'Chưa đặt tên'">
                             </div>
-                            
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-800 mb-1">Đóng gói lẻ / Retail pack</label>
-                                    <input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-4 py-2 border bg-white" placeholder="VD: Hộp 500g, Gói 200g...">
+                                    <input type="text" id="retail_pack_${pId}" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-4 py-2 border bg-white" placeholder="VD: Hộp 500g, Gói 200g...">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-800 mb-1">Đóng gói Thùng carton / Carton</label>
-                                    <input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-4 py-2 border bg-white" placeholder="VD: Thùng 24 lon...">
+                                    <label class="block text-sm font-semibold text-gray-800 mb-1">Đóng gói Thùng carton</label>
+                                    <input type="text" id="carton_pack_${pId}" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-4 py-2 border bg-white" placeholder="VD: Thùng 24 lon...">
                                 </div>
                                 <div class="sm:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div>
-                                        <label class="block text-sm font-semibold text-gray-800 mb-1">Kích thước thùng / Carton size (m)</label>
+                                        <label class="block text-sm font-semibold text-gray-800 mb-1">Kích thước thùng (m)</label>
                                         <div class="flex items-center space-x-1 sm:space-x-2">
-                                            <input type="number" id="carton_l_${pId}" oninput="calculateCBM(${pId})" class="flex-1 min-w-0 border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-1 sm:px-2 py-2 border text-center text-sm" placeholder="Dài">
+                                            <input type="number" id="carton_l_${pId}" oninput="calculateCBM(${pId})" class="flex-1 min-w-0 border-gray-300 rounded-md shadow-sm focus:ring-green-500 px-1 sm:px-2 py-2 border text-center text-sm" placeholder="Dài">
                                             <span class="text-gray-400 font-bold text-xs">x</span>
-                                            <input type="number" id="carton_w_${pId}" oninput="calculateCBM(${pId})" class="flex-1 min-w-0 border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-1 sm:px-2 py-2 border text-center text-sm" placeholder="Rộng">
+                                            <input type="number" id="carton_w_${pId}" oninput="calculateCBM(${pId})" class="flex-1 min-w-0 border-gray-300 rounded-md shadow-sm focus:ring-green-500 px-1 sm:px-2 py-2 border text-center text-sm" placeholder="Rộng">
                                             <span class="text-gray-400 font-bold text-xs">x</span>
-                                            <input type="number" id="carton_h_${pId}" oninput="calculateCBM(${pId})" class="flex-1 min-w-0 border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-1 sm:px-2 py-2 border text-center text-sm" placeholder="Cao">
+                                            <input type="number" id="carton_h_${pId}" oninput="calculateCBM(${pId})" class="flex-1 min-w-0 border-gray-300 rounded-md shadow-sm focus:ring-green-500 px-1 sm:px-2 py-2 border text-center text-sm" placeholder="Cao">
                                         </div>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-semibold text-gray-800 mb-1">CBM <span class="text-xs font-normal text-gray-500 italic">(D x R x C)</span></label>
+                                        <label class="block text-sm font-semibold text-gray-800 mb-1">CBM <span class="text-xs font-normal text-gray-500">(D x R x C)</span></label>
                                         <input type="text" id="cbm_${pId}" class="w-full border-gray-300 rounded-md shadow-sm px-4 py-2 border bg-gray-100 text-gray-700 font-semibold cursor-not-allowed" placeholder="Tự động tính..." readonly>
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-800 mb-1">Thùng - Trọng lượng / Netweight</label>
-                                    <input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-4 py-2 border bg-white" placeholder="VD: 5 kg, 10 kg...">
+                                    <label class="block text-sm font-semibold text-gray-800 mb-1">Trọng lượng Net</label>
+                                    <input type="text" id="net_weight_${pId}" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 px-4 py-2 border bg-white" placeholder="VD: 5 kg...">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-800 mb-1">Thùng - Trọng lượng tổng</label>
-                                    <input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-4 py-2 border bg-white" placeholder="VD: 5.5 kg, 11.2 kg...">
+                                    <label class="block text-sm font-semibold text-gray-800 mb-1">Trọng lượng tổng</label>
+                                    <input type="text" id="gross_weight_${pId}" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 px-4 py-2 border bg-white" placeholder="VD: 5.5 kg...">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-800 mb-1">Số lượng thùng cho mỗi pallet</label>
-                                    <input type="number" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-4 py-2 border bg-white" placeholder="VD: 50">
+                                    <label class="block text-sm font-semibold text-gray-800 mb-1">Thùng / pallet</label>
+                                    <input type="number" id="cartons_per_pallet_${pId}" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 px-4 py-2 border bg-white" placeholder="VD: 50">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-800 mb-1">Tải 20' / Loadability 20'GP</label>
-                                    <input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-4 py-2 border bg-white" placeholder="VD: 1000 thùng">
+                                    <label class="block text-sm font-semibold text-gray-800 mb-1">Tải 20'GP</label>
+                                    <input type="text" id="loadability_20_${pId}" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 px-4 py-2 border bg-white" placeholder="VD: 1000 thùng">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-800 mb-1">Tải 40' / Loadability 40'HC</label>
-                                    <input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-4 py-2 border bg-white" placeholder="VD: 2100 thùng">
+                                    <label class="block text-sm font-semibold text-gray-800 mb-1">Tải 40'HC</label>
+                                    <input type="text" id="loadability_40_${pId}" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 px-4 py-2 border bg-white" placeholder="VD: 2100 thùng">
                                 </div>
-                                
+
                                 <div class="sm:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-5">
                                     <div>
-                                        <label class="block text-sm font-semibold text-gray-800 mb-1">Điều kiện giao hàng / Incoterms</label>
+                                        <label class="block text-sm font-semibold text-gray-800 mb-1">Incoterms</label>
                                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-gray-50 p-2 rounded-md border border-gray-200">
-                                            <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" value="FOB" class="form-checkbox text-green-600 focus:ring-green-500 h-4 w-4 rounded border-gray-300"><span class="text-xs text-gray-700">FOB</span></label>
-                                            <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" value="CIF" class="form-checkbox text-green-600 focus:ring-green-500 h-4 w-4 rounded border-gray-300"><span class="text-xs text-gray-700">CIF</span></label>
-                                            <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" value="CFR" class="form-checkbox text-green-600 focus:ring-green-500 h-4 w-4 rounded border-gray-300"><span class="text-xs text-gray-700">CFR</span></label>
-                                            <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" value="EXW" class="form-checkbox text-green-600 focus:ring-green-500 h-4 w-4 rounded border-gray-300"><span class="text-xs text-gray-700">EXW</span></label>
-                                            <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" value="DAP / DDP" class="form-checkbox text-green-600 focus:ring-green-500 h-4 w-4 rounded border-gray-300"><span class="text-xs text-gray-700">DAP / DDP</span></label>
-                                            <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" value="FCA" class="form-checkbox text-green-600 focus:ring-green-500 h-4 w-4 rounded border-gray-300"><span class="text-xs text-gray-700">FCA</span></label>
+                                            <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" value="FOB" class="form-checkbox text-green-600 h-4 w-4 rounded border-gray-300"><span class="text-xs text-gray-700">FOB</span></label>
+                                            <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" value="CIF" class="form-checkbox text-green-600 h-4 w-4 rounded border-gray-300"><span class="text-xs text-gray-700">CIF</span></label>
+                                            <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" value="CFR" class="form-checkbox text-green-600 h-4 w-4 rounded border-gray-300"><span class="text-xs text-gray-700">CFR</span></label>
+                                            <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" value="EXW" class="form-checkbox text-green-600 h-4 w-4 rounded border-gray-300"><span class="text-xs text-gray-700">EXW</span></label>
+                                            <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" value="DAP / DDP" class="form-checkbox text-green-600 h-4 w-4 rounded border-gray-300"><span class="text-xs text-gray-700">DAP/DDP</span></label>
+                                            <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" value="FCA" class="form-checkbox text-green-600 h-4 w-4 rounded border-gray-300"><span class="text-xs text-gray-700">FCA</span></label>
                                         </div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-semibold text-gray-800 mb-1">Cảng / Port</label>
-                                        <div class="h-[95px] overflow-y-auto bg-gray-50 p-2 rounded-md border border-gray-200 grid grid-cols-1 sm:grid-cols-2 gap-1">
-                                            ${['on request', 'Cát Lái', 'Cái Mép – Thị Vải', 'Hiệp Phước', 'Hải Phòng', 'Lạch Huyện', 'Đà Nẵng', 'Quy Nhơn', 'Chân Mây'].map(port => `
-                                                <label class="flex items-center space-x-2 cursor-pointer hover:bg-white rounded p-1 transition-colors border border-transparent hover:border-gray-200">
-                                                    <input type="checkbox" value="${port}" class="form-checkbox text-green-600 focus:ring-green-500 h-4 w-4 rounded border-gray-300">
-                                                    <span class="text-xs text-gray-700">${port}</span>
-                                                </label>
-                                            `).join('')}
+                                        <div id="ports_container_${pId}" class="h-[95px] overflow-y-auto bg-gray-50 p-2 rounded-md border border-gray-200 grid grid-cols-1 sm:grid-cols-2 gap-1">
+                                            ${['on request','Cát Lái','Cái Mép – Thị Vải','Hiệp Phước','Hải Phòng','Lạch Huyện','Đà Nẵng','Quy Nhơn','Chân Mây'].map(port => `
+                                            <label class="flex items-center space-x-2 cursor-pointer hover:bg-white rounded p-1 transition-colors border border-transparent hover:border-gray-200">
+                                                <input type="checkbox" value="${port}" class="form-checkbox text-green-600 h-4 w-4 rounded border-gray-300">
+                                                <span class="text-xs text-gray-700">${port}</span>
+                                            </label>`).join('')}
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="sm:col-span-2">
-                                    <label class="block text-sm font-semibold text-gray-800 mb-1">Phương thức thanh toán / Payment methods</label>
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 bg-gray-50 p-3 rounded-md border border-gray-200">
-                                        <label class="flex items-center space-x-2 cursor-pointer hover:bg-white rounded p-1 transition-colors border border-transparent hover:border-gray-200"><input type="checkbox" value="O/A" class="form-checkbox text-green-600 focus:ring-green-500 h-4 w-4 rounded border-gray-300"><span class="text-xs text-gray-700">Trả sau / ghi sổ (O/A)</span></label>
-                                        <label class="flex items-center space-x-2 cursor-pointer hover:bg-white rounded p-1 transition-colors border border-transparent hover:border-gray-200"><input type="checkbox" value="D/P, D/A" class="form-checkbox text-green-600 focus:ring-green-500 h-4 w-4 rounded border-gray-300"><span class="text-xs text-gray-700">Nhờ thu (D/P, D/A)</span></label>
-                                        <label class="flex items-center space-x-2 cursor-pointer hover:bg-white rounded p-1 transition-colors border border-transparent hover:border-gray-200"><input type="checkbox" value="L/C" class="form-checkbox text-green-600 focus:ring-green-500 h-4 w-4 rounded border-gray-300"><span class="text-xs text-gray-700">Thư tín dụng (L/C)</span></label>
-                                        <label class="flex items-center space-x-2 cursor-pointer hover:bg-white rounded p-1 transition-colors border border-transparent hover:border-gray-200"><input type="checkbox" value="T/T advance" class="form-checkbox text-green-600 focus:ring-green-500 h-4 w-4 rounded border-gray-300"><span class="text-xs text-gray-700">Trả trước (T/T advance)</span></label>
-                                        
-                                        <div class="col-span-1 sm:col-span-2 md:col-span-2 flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 hover:bg-white rounded p-1 transition-colors border border-transparent hover:border-gray-200">
-                                            <label class="flex items-center space-x-2 cursor-pointer">
-                                                <input type="checkbox" onchange="toggleOtherPayment(this, ${pId})" class="form-checkbox text-green-600 focus:ring-green-500 h-4 w-4 rounded border-gray-300">
-                                                <span class="text-xs text-gray-700">Khác (Others)</span>
-                                            </label>
-                                            <input type="text" id="payment_other_text_${pId}" placeholder="Nhập phương thức khác..." class="flex-1 border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-2 py-1 text-xs border hidden" disabled>
+                                    <label class="block text-sm font-semibold text-gray-800 mb-1">Phương thức thanh toán</label>
+                                    <div id="payment_container_${pId}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 bg-gray-50 p-3 rounded-md border border-gray-200">
+                                        <label class="flex items-center space-x-2 cursor-pointer hover:bg-white rounded p-1 transition-colors border border-transparent hover:border-gray-200"><input type="checkbox" value="O/A" class="form-checkbox text-green-600 h-4 w-4 rounded border-gray-300"><span class="text-xs text-gray-700">Trả sau (O/A)</span></label>
+                                        <label class="flex items-center space-x-2 cursor-pointer hover:bg-white rounded p-1 transition-colors border border-transparent hover:border-gray-200"><input type="checkbox" value="D/P, D/A" class="form-checkbox text-green-600 h-4 w-4 rounded border-gray-300"><span class="text-xs text-gray-700">Nhờ thu (D/P, D/A)</span></label>
+                                        <label class="flex items-center space-x-2 cursor-pointer hover:bg-white rounded p-1 transition-colors border border-transparent hover:border-gray-200"><input type="checkbox" value="L/C" class="form-checkbox text-green-600 h-4 w-4 rounded border-gray-300"><span class="text-xs text-gray-700">Thư tín dụng (L/C)</span></label>
+                                        <label class="flex items-center space-x-2 cursor-pointer hover:bg-white rounded p-1 transition-colors border border-transparent hover:border-gray-200"><input type="checkbox" value="T/T advance" class="form-checkbox text-green-600 h-4 w-4 rounded border-gray-300"><span class="text-xs text-gray-700">Trả trước (T/T)</span></label>
+                                        <div class="col-span-1 sm:col-span-2 flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 hover:bg-white rounded p-1 transition-colors">
+                                            <label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" onchange="toggleOtherPayment(this, ${pId})" class="form-checkbox text-green-600 h-4 w-4 rounded border-gray-300"><span class="text-xs text-gray-700">Khác</span></label>
+                                            <input type="text" id="payment_other_text_${pId}" placeholder="Nhập phương thức khác..." class="flex-1 border-gray-300 rounded-md shadow-sm focus:ring-green-500 px-2 py-1 text-xs border hidden" disabled>
                                         </div>
                                     </div>
                                 </div>
@@ -841,67 +925,63 @@
                                     <div class="flex flex-col gap-2">
                                         <div class="flex items-center space-x-2">
                                             <span class="text-gray-600 text-sm font-medium w-8">FCL:</span>
-                                            <input type="number" class="w-1/3 border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-3 py-2 border text-sm" placeholder="Số lượng">
+                                            <input type="number" id="moq_fcl_qty_${pId}" class="w-1/3 border-gray-300 rounded-md shadow-sm focus:ring-green-500 px-3 py-2 border text-sm" placeholder="Số lượng">
                                             <span class="text-gray-400 font-bold text-xs">x</span>
-                                            <select class="flex-1 border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-3 py-2 border text-sm bg-white">
+                                            <select id="moq_fcl_type_${pId}" class="flex-1 border-gray-300 rounded-md shadow-sm focus:ring-green-500 px-3 py-2 border text-sm bg-white">
                                                 <option value="20'GP">20'GP</option>
                                                 <option value="40'HC">40'HC</option>
                                             </select>
                                         </div>
                                         <div class="flex items-center space-x-2">
                                             <span class="text-gray-600 text-sm font-medium w-8">LCL:</span>
-                                            <input type="text" class="flex-1 border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-3 py-2 border text-sm" placeholder="VD: 10 Pallet">
+                                            <input type="text" id="moq_lcl_${pId}" class="flex-1 border-gray-300 rounded-md shadow-sm focus:ring-green-500 px-3 py-2 border text-sm" placeholder="VD: 10 Pallet">
                                         </div>
                                     </div>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-800 mb-1">Hạn sử dụng</label>
-                                    <input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-4 py-2 border bg-white" placeholder="VD: 12 tháng, 01/01/2026...">
+                                    <input type="text" id="shelf_life_${pId}" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 px-4 py-2 border bg-white" placeholder="VD: 12 tháng...">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-800 mb-1">Điều kiện bảo quản</label>
-                                    <input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-4 py-2 border bg-white" placeholder="VD: Nơi khô ráo, bảo quản lạnh...">
+                                    <input type="text" id="storage_cond_${pId}" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 px-4 py-2 border bg-white" placeholder="VD: Nơi khô ráo...">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-800 mb-1">Năng lực sản xuất</label>
-                                    <input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-4 py-2 border bg-white" placeholder="VD: 10.000 sản phẩm / tháng...">
+                                    <input type="text" id="prod_capacity_${pId}" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 px-4 py-2 border bg-white" placeholder="VD: 10.000 sp / tháng...">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-800 mb-1">Phân phối trong hệ thống siêu thị</label>
-                                    <input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-4 py-2 border bg-white" placeholder="VD: Co.opmart, Go!, WinMart...">
+                                    <label class="block text-sm font-semibold text-gray-800 mb-1">Phân phối siêu thị</label>
+                                    <input type="text" id="supermarket_dist_${pId}" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 px-4 py-2 border bg-white" placeholder="VD: Co.opmart, Go!...">
                                 </div>
                             </div>
 
                             <div class="mt-2">
                                 <label class="block text-sm font-semibold text-gray-800 mb-1">Hệ thống bán lẻ tại các tỉnh thành</label>
-                                <div class="h-[120px] overflow-y-auto pr-2 bg-gray-50 border border-gray-300 rounded-md p-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1">
+                                <div id="provinces_container_${pId}" class="h-[120px] overflow-y-auto pr-2 bg-gray-50 border border-gray-300 rounded-md p-2 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1">
                                     ${PROVINCES_LIST.map(prov => `
-                                        <label class="flex items-center space-x-2 cursor-pointer p-1.5 hover:bg-white rounded transition-colors border border-transparent hover:border-gray-200">
-                                            <input type="checkbox" value="${prov}" class="form-checkbox h-4 w-4 text-green-600 rounded border-gray-300 focus:ring-green-500">
-                                            <span class="text-xs text-gray-700 whitespace-nowrap overflow-hidden text-ellipsis" title="${prov}">${prov}</span>
-                                        </label>
-                                    `).join('')}
+                                    <label class="flex items-center space-x-2 cursor-pointer p-1.5 hover:bg-white rounded transition-colors border border-transparent hover:border-gray-200">
+                                        <input type="checkbox" value="${prov}" class="form-checkbox h-4 w-4 text-green-600 rounded border-gray-300">
+                                        <span class="text-xs text-gray-700 whitespace-nowrap overflow-hidden text-ellipsis" title="${prov}">${prov}</span>
+                                    </label>`).join('')}
                                 </div>
                             </div>
 
-                            <!-- NGUYÊN LIỆU (Văn bản thường) -->
                             <div class="mt-2">
                                 <label class="block text-sm font-semibold text-gray-800 mb-1">Nguyên liệu</label>
-                                <textarea rows="2" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-4 py-2 border bg-white text-sm" placeholder="VD: Bột mì, Đường, Sữa, Trứng..."></textarea>
+                                <textarea id="ingredients_${pId}" rows="2" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 px-4 py-2 border bg-white text-sm" placeholder="VD: Bột mì, Đường, Sữa..."></textarea>
                             </div>
 
-                            <!-- TAGS SẢN PHẨM -->
+                            <!-- Tags sản phẩm -->
                             <div class="bg-green-50/50 p-4 rounded-lg border border-green-100 mt-2">
-                                <label class="block text-sm font-semibold text-gray-800 mb-1">Thẻ từ khóa (Tags) <span class="text-xs font-normal text-gray-500 italic">(Nhập từ khóa và nhấn Enter hoặc chọn gợi ý)</span></label>
-                                <!-- Gợi ý có sẵn -->
+                                <label class="block text-sm font-semibold text-gray-800 mb-1">Thẻ từ khóa (Tags)</label>
                                 <div class="mb-2 flex flex-wrap gap-2">
-                                    <button type="button" onclick="addProductTag(${pId}, 'Hữu cơ')" class="text-xs bg-white hover:bg-green-100 text-gray-600 hover:text-green-700 px-2.5 py-1 rounded-full border border-gray-200 shadow-sm transition-colors">#Hữu cơ <i class="fa-solid fa-plus ml-1 text-[10px]"></i></button>
-                                    <button type="button" onclick="addProductTag(${pId}, 'Đặc sản')" class="text-xs bg-white hover:bg-green-100 text-gray-600 hover:text-green-700 px-2.5 py-1 rounded-full border border-gray-200 shadow-sm transition-colors">#Đặc sản <i class="fa-solid fa-plus ml-1 text-[10px]"></i></button>
-                                    <button type="button" onclick="addProductTag(${pId}, 'Xuất khẩu')" class="text-xs bg-white hover:bg-green-100 text-gray-600 hover:text-green-700 px-2.5 py-1 rounded-full border border-gray-200 shadow-sm transition-colors">#Xuất khẩu <i class="fa-solid fa-plus ml-1 text-[10px]"></i></button>
-                                    <button type="button" onclick="addProductTag(${pId}, 'Bán chạy')" class="text-xs bg-white hover:bg-green-100 text-gray-600 hover:text-green-700 px-2.5 py-1 rounded-full border border-gray-200 shadow-sm transition-colors">#Bán chạy <i class="fa-solid fa-plus ml-1 text-[10px]"></i></button>
+                                    <button type="button" onclick="addProductTag(${pId}, 'Hữu cơ')" class="text-xs bg-white hover:bg-green-100 text-gray-600 px-2.5 py-1 rounded-full border border-gray-200 shadow-sm">#Hữu cơ <i class="fa-solid fa-plus ml-1 text-[10px]"></i></button>
+                                    <button type="button" onclick="addProductTag(${pId}, 'Đặc sản')" class="text-xs bg-white hover:bg-green-100 text-gray-600 px-2.5 py-1 rounded-full border border-gray-200 shadow-sm">#Đặc sản <i class="fa-solid fa-plus ml-1 text-[10px]"></i></button>
+                                    <button type="button" onclick="addProductTag(${pId}, 'Xuất khẩu')" class="text-xs bg-white hover:bg-green-100 text-gray-600 px-2.5 py-1 rounded-full border border-gray-200 shadow-sm">#Xuất khẩu <i class="fa-solid fa-plus ml-1 text-[10px]"></i></button>
+                                    <button type="button" onclick="addProductTag(${pId}, 'Bán chạy')" class="text-xs bg-white hover:bg-green-100 text-gray-600 px-2.5 py-1 rounded-full border border-gray-200 shadow-sm">#Bán chạy <i class="fa-solid fa-plus ml-1 text-[10px]"></i></button>
                                 </div>
-                                <!-- Input -->
-                                <div class="p-2 w-full border border-gray-300 rounded-md shadow-sm focus-within:ring-1 focus-within:ring-green-500 focus-within:border-green-500 bg-white flex flex-wrap gap-2 min-h-[42px] cursor-text" id="product-tags-container-${pId}" onclick="document.getElementById('product-tag-input-${pId}').focus()">
+                                <div class="p-2 w-full border border-gray-300 rounded-md bg-white flex flex-wrap gap-2 min-h-[42px] cursor-text" id="product-tags-container-${pId}" onclick="document.getElementById('product-tag-input-${pId}').focus()">
                                     <input type="text" id="product-tag-input-${pId}" class="flex-1 outline-none min-w-[150px] text-sm bg-transparent border-none focus:ring-0 p-1" placeholder="Thêm thẻ từ khóa..." onkeydown="handleProductTagInput(event, ${pId})">
                                 </div>
                             </div>
@@ -909,52 +989,37 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-2">
                                 <div class="sm:col-span-2">
                                     <label class="block text-sm font-semibold text-gray-800 mb-1">Khuyến cáo sử dụng</label>
-                                    <textarea rows="3" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 px-4 py-2 border bg-white text-sm" placeholder="Hướng dẫn sử dụng, điều kiện bảo quản, lưu ý..."></textarea>
+                                    <textarea id="usage_rec_${pId}" rows="3" class="w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 px-4 py-2 border bg-white text-sm" placeholder="Hướng dẫn sử dụng, lưu ý..."></textarea>
                                 </div>
-                                
+
+                                <!-- Thành phần dinh dưỡng -->
                                 <div class="sm:col-span-2 mt-2 border-t border-gray-100 pt-4">
                                     <label class="block text-sm font-semibold text-gray-800 mb-3">Thành phần dinh dưỡng</label>
-                                    
                                     <div class="flex flex-wrap items-center space-x-6 mb-4">
-                                        <label class="flex items-center cursor-pointer">
-                                            <input type="radio" name="nutri_type_${pId}" value="file" checked onchange="toggleNutriType(${pId}, 'file')" class="form-radio text-green-600 focus:ring-green-500 h-4 w-4 cursor-pointer">
-                                            <span class="ml-2 text-sm text-gray-700 font-medium">Tải file đính kèm</span>
-                                        </label>
-                                        <label class="flex items-center cursor-pointer">
-                                            <input type="radio" name="nutri_type_${pId}" value="table" onchange="toggleNutriType(${pId}, 'table')" class="form-radio text-green-600 focus:ring-green-500 h-4 w-4 cursor-pointer">
-                                            <span class="ml-2 text-sm text-gray-700 font-medium">Điền bảng thông tin (Excel)</span>
-                                        </label>
+                                        <label class="flex items-center cursor-pointer"><input type="radio" name="nutri_type_${pId}" value="file" checked onchange="toggleNutriType(${pId}, 'file')" class="form-radio text-green-600 h-4 w-4 cursor-pointer"><span class="ml-2 text-sm text-gray-700 font-medium">Tải file đính kèm</span></label>
+                                        <label class="flex items-center cursor-pointer"><input type="radio" name="nutri_type_${pId}" value="table" onchange="toggleNutriType(${pId}, 'table')" class="form-radio text-green-600 h-4 w-4 cursor-pointer"><span class="ml-2 text-sm text-gray-700 font-medium">Điền bảng thông tin</span></label>
                                     </div>
-
-                                    <!-- Option 1: File Upload -->
                                     <div id="nutri_file_wrapper_${pId}" class="block bg-gray-50 p-4 rounded-md border border-dashed border-gray-300">
-                                        <input type="file" accept="image/*,.pdf,.xlsx,.xls" class="w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-green-100 file:text-green-700 hover:file:bg-green-200 border border-gray-300 rounded-md bg-white cursor-pointer shadow-sm">
-                                        <p class="text-xs text-gray-500 mt-2 italic"><i class="fa-solid fa-circle-info mr-1"></i>Hỗ trợ định dạng: Hình ảnh, PDF, Excel.</p>
+                                        <input type="file" id="nutri_file_input_${pId}" accept="image/*,.pdf,.xlsx,.xls" class="w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-green-100 file:text-green-700 hover:file:bg-green-200 border border-gray-300 rounded-md bg-white cursor-pointer shadow-sm">
+                                        <p class="text-xs text-gray-500 mt-2 italic"><i class="fa-solid fa-circle-info mr-1"></i>Hỗ trợ: Hình ảnh, PDF, Excel.</p>
                                     </div>
-
-                                    <!-- Option 2: Table Builder -->
                                     <div id="nutri_table_wrapper_${pId}" class="hidden flex-col">
                                         <div class="flex flex-wrap items-center gap-2 mb-2 bg-gray-50 p-2 rounded-t-md border border-gray-300 border-b-0 shadow-sm">
-                                            <button type="button" onclick="addTableRow(${pId})" class="px-3 py-1.5 bg-white border border-gray-300 rounded shadow-sm text-xs font-semibold text-gray-700 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-plus text-green-500 mr-1"></i>Thêm dòng</button>
-                                            <button type="button" onclick="addTableCol(${pId})" class="px-3 py-1.5 bg-white border border-gray-300 rounded shadow-sm text-xs font-semibold text-gray-700 hover:bg-gray-100 transition-colors"><i class="fa-solid fa-plus text-green-500 mr-1"></i>Thêm cột</button>
+                                            <button type="button" onclick="addTableRow(${pId})" class="px-3 py-1.5 bg-white border border-gray-300 rounded shadow-sm text-xs font-semibold text-gray-700 hover:bg-gray-100"><i class="fa-solid fa-plus text-green-500 mr-1"></i>Thêm dòng</button>
+                                            <button type="button" onclick="addTableCol(${pId})" class="px-3 py-1.5 bg-white border border-gray-300 rounded shadow-sm text-xs font-semibold text-gray-700 hover:bg-gray-100"><i class="fa-solid fa-plus text-green-500 mr-1"></i>Thêm cột</button>
                                             <div class="w-px h-5 bg-gray-300 mx-1"></div>
-                                            <button type="button" onclick="mergeCellsRight(${pId})" class="px-3 py-1.5 bg-white border border-gray-300 rounded shadow-sm text-xs font-semibold text-blue-600 hover:bg-blue-50 transition-colors"><i class="fa-solid fa-object-group mr-1"></i>Gộp phải</button>
-                                            <button type="button" onclick="mergeCellsDown(${pId})" class="px-3 py-1.5 bg-white border border-gray-300 rounded shadow-sm text-xs font-semibold text-blue-600 hover:bg-blue-50 transition-colors"><i class="fa-solid fa-object-group mr-1"></i>Gộp dưới</button>
-                                            <button type="button" onclick="unmergeCells(${pId})" class="px-3 py-1.5 bg-white border border-gray-300 rounded shadow-sm text-xs font-semibold text-red-500 hover:bg-red-50 transition-colors"><i class="fa-solid fa-object-ungroup mr-1"></i>Bỏ gộp</button>
-                                            <span class="text-[11px] text-gray-500 italic ml-auto"><i class="fa-regular fa-hand-pointer mr-1"></i>Nhấn vào 1 ô để chọn & gộp</span>
+                                            <button type="button" onclick="mergeCellsRight(${pId})" class="px-3 py-1.5 bg-white border border-gray-300 rounded shadow-sm text-xs font-semibold text-blue-600 hover:bg-blue-50"><i class="fa-solid fa-object-group mr-1"></i>Gộp phải</button>
+                                            <button type="button" onclick="mergeCellsDown(${pId})" class="px-3 py-1.5 bg-white border border-gray-300 rounded shadow-sm text-xs font-semibold text-blue-600 hover:bg-blue-50"><i class="fa-solid fa-object-group mr-1"></i>Gộp dưới</button>
+                                            <button type="button" onclick="unmergeCells(${pId})" class="px-3 py-1.5 bg-white border border-gray-300 rounded shadow-sm text-xs font-semibold text-red-500 hover:bg-red-50"><i class="fa-solid fa-object-ungroup mr-1"></i>Bỏ gộp</button>
+                                            <span class="text-[11px] text-gray-500 italic ml-auto"><i class="fa-regular fa-hand-pointer mr-1"></i>Nhấn ô để chọn & gộp</span>
                                         </div>
-                                        <div class="overflow-x-auto overflow-y-visible border border-gray-300 rounded-b-md shadow-sm">
+                                        <div class="overflow-x-auto border border-gray-300 rounded-b-md shadow-sm">
                                             <table id="nutri_table_${pId}" class="w-full min-w-full border-collapse bg-white">
                                                 <tbody>
-                                                    ${[1,2,3].map(row => `
-                                                    <tr>
-                                                        ${[1,2,3].map(col => `
-                                                        <td class="border border-gray-300 p-0 relative group transition-colors" onclick="selectTableCell(this, ${pId})">
-                                                            <div contenteditable="true" class="w-full h-full min-h-[40px] p-2 text-sm outline-none focus:bg-yellow-50"></div>
-                                                        </td>
-                                                        `).join('')}
-                                                    </tr>
-                                                    `).join('')}
+                                                    ${[1,2,3].map(() => `<tr>${[1,2,3].map(() => `
+                                                    <td class="border border-gray-300 p-0 relative group transition-colors" onclick="selectTableCell(this, ${pId})">
+                                                        <div contenteditable="true" class="w-full h-full min-h-[40px] p-2 text-sm outline-none focus:bg-yellow-50"></div>
+                                                    </td>`).join('')}</tr>`).join('')}
                                                 </tbody>
                                             </table>
                                         </div>
@@ -964,29 +1029,26 @@
                         </div>
                     </div>
 
+                    <!-- Chứng nhận sản phẩm -->
                     <div class="mt-8 bg-gray-50/50 p-5 rounded-lg border border-gray-200 shadow-inner">
                         <div class="flex justify-between items-center mb-4 border-b border-gray-200 pb-2">
-                            <h4 class="font-bold text-gray-800"><i class="fa-solid fa-medal mr-2 text-yellow-500"></i> Chứng nhận đạt riêng cho sản phẩm</h4>
-                            <button type="button" onclick="addProductStandard(${pId})" class="text-green-700 bg-green-100 hover:bg-green-200 border border-green-300 shadow-sm px-3 py-1.5 rounded-md text-xs font-bold transition-colors">
-                                <i class="fa-solid fa-plus mr-1"></i> Thêm chứng nhận
-                            </button>
+                            <h4 class="font-bold text-gray-800"><i class="fa-solid fa-medal mr-2 text-yellow-500"></i> Chứng nhận riêng cho sản phẩm</h4>
+                            <button type="button" onclick="addProductStandard(${pId})" class="text-green-700 bg-green-100 hover:bg-green-200 border border-green-300 shadow-sm px-3 py-1.5 rounded-md text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i> Thêm chứng nhận</button>
                         </div>
                         <div id="standards_container_${pId}" class="space-y-3"></div>
-                        <p id="standards_empty_${pId}" class="text-sm text-gray-400 italic text-center py-4">Sản phẩm chưa có chứng nhận riêng. Nhấn "Thêm chứng nhận" để tải lên.</p>
+                        <p id="standards_empty_${pId}" class="text-sm text-gray-400 italic text-center py-4">Sản phẩm chưa có chứng nhận riêng.</p>
                     </div>
 
                     <div class="pt-6 mt-6 border-t border-gray-200 flex justify-end">
-                        <button type="button" onclick="saveAndAddNew(${pId})" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-md transition-all transform hover:-translate-y-0.5 flex items-center text-sm sm:text-base">
-                            <i class="fa-solid fa-plus-circle mr-2"></i> LƯU SẢN PHẨM HIỆN TẠI & CẬP NHẬT SẢN PHẨM KHÁC
+                        <button type="button" onclick="saveAndAddNew(${pId})" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-md transition-all flex items-center text-sm sm:text-base">
+                            <i class="fa-solid fa-plus-circle mr-2"></i> LƯU SẢN PHẨM & THÊM SẢN PHẨM KHÁC
                         </button>
                     </div>
                 </div>
-            </div>
-            `;
-            
-            document.getElementById('products-wrapper').insertAdjacentHTML('beforeend', html);
+            </div>`);
+
             document.getElementById('finish-btn-container').style.display = 'flex';
-            setTimeout(() => { document.getElementById(`product_block_${pId}`).scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 100);
+            setTimeout(() => document.getElementById(`product_block_${pId}`).scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
         }
 
         function toggleProduct(pId, forceCollapse = false) {
@@ -994,76 +1056,40 @@
             const icon = document.getElementById(`icon_toggle_${pId}`);
             if (forceCollapse || !body.classList.contains('hidden')) {
                 body.classList.add('hidden');
-                icon.classList.remove('fa-chevron-up');
-                icon.classList.add('fa-chevron-down');
+                icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
             } else {
                 body.classList.remove('hidden');
-                icon.classList.remove('fa-chevron-down');
-                icon.classList.add('fa-chevron-up');
+                icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
             }
         }
 
         function removeProduct(pId) {
-            if(confirm('Bạn có chắc chắn muốn xóa biểu mẫu sản phẩm này?')) {
+            if (confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
                 document.getElementById(`product_block_${pId}`).remove();
-                if(document.getElementById('products-wrapper').children.length === 0) {
+                if (!document.getElementById('products-wrapper').children.length)
                     document.getElementById('finish-btn-container').style.display = 'none';
-                }
             }
-        }
-
-        function saveAndAddNew(pId) {
-            const nameInput = document.getElementById(`name_${pId}`).value.trim();
-            if(!nameInput) {
-                alert('Vui lòng nhập "Tên sản phẩm" trước khi lưu!');
-                document.getElementById(`name_${pId}`).focus();
-                return;
-            }
-            toggleProduct(pId, true);
-            document.getElementById(`status_check_${pId}`).classList.remove('hidden');
-            document.getElementById(`product_block_${pId}`).classList.replace('border-green-200', 'border-gray-200');
-            document.getElementById(`product_block_${pId}`).classList.replace('shadow-lg', 'shadow-sm');
-            addNewProductBlock();
         }
 
         function addProductStandard(pId) {
             document.getElementById(`standards_empty_${pId}`).style.display = 'none';
-            const stdId = new Date().getTime();
-            const html = `
+            const stdId = Date.now();
+            document.getElementById(`standards_container_${pId}`).insertAdjacentHTML('beforeend', `
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-3 p-4 border border-gray-300 rounded-md bg-white relative pr-10 shadow-sm" id="std_${stdId}">
-                    <button type="button" onclick="document.getElementById('std_${stdId}').remove(); checkEmptyProductStandards(${pId});" class="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors" title="Xóa chứng nhận">
-                        <i class="fa-solid fa-xmark text-lg"></i>
-                    </button>
-                    <div class="md:col-span-4">
-                        <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Tên chứng nhận</label>
-                        <input type="text" class="w-full border-gray-300 rounded px-2 py-1.5 text-sm border focus:ring-green-500 shadow-sm" placeholder="VD: OCOP 4 sao...">
-                    </div>
-                    <div class="md:col-span-4">
-                        <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Logo (PNG)</label>
-                        <input type="file" accept=".png,image/png" class="w-full text-xs text-gray-600 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 border border-gray-300 rounded bg-white cursor-pointer">
-                    </div>
-                    <div class="md:col-span-4">
-                        <label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">File cấp phép (Ảnh/PDF)</label>
-                        <input type="file" class="w-full text-xs text-gray-600 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 border border-gray-300 rounded bg-white cursor-pointer">
-                    </div>
-                </div>
-            `;
-            document.getElementById(`standards_container_${pId}`).insertAdjacentHTML('beforeend', html);
+                    <button type="button" onclick="document.getElementById('std_${stdId}').remove(); checkEmptyProductStandards(${pId});" class="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors"><i class="fa-solid fa-xmark text-lg"></i></button>
+                    <div class="md:col-span-4"><label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Tên chứng nhận</label><input type="text" class="w-full border-gray-300 rounded px-2 py-1.5 text-sm border focus:ring-green-500 shadow-sm" placeholder="VD: OCOP 4 sao..."></div>
+                    <div class="md:col-span-4"><label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">Logo (PNG)</label><input type="file" accept=".png,image/png" class="w-full text-xs text-gray-600 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 border border-gray-300 rounded bg-white cursor-pointer"></div>
+                    <div class="md:col-span-4"><label class="block text-[11px] font-bold text-gray-500 uppercase mb-1">File cấp phép (Ảnh/PDF)</label><input type="file" class="w-full text-xs text-gray-600 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 border border-gray-300 rounded bg-white cursor-pointer"></div>
+                </div>`);
         }
 
         function checkEmptyProductStandards(pId) {
-            if (document.getElementById(`standards_container_${pId}`).children.length === 0) {
+            if (!document.getElementById(`standards_container_${pId}`).children.length)
                 document.getElementById(`standards_empty_${pId}`).style.display = 'block';
-            }
         }
 
-        function finishAll() {
-            alert("Tuyệt vời! Toàn bộ hồ sơ doanh nghiệp và danh sách sản phẩm của bạn đã được cập nhật thành công.");
-        }
-
-        // --- SCRIPT XỬ LÝ BẢNG EXCEL THÀNH PHẦN DINH DƯỠNG ---
+        // ── Bảng dinh dưỡng ─────────────────────────────────────────
         let selectedTableCell = null;
-
         function toggleNutriType(pId, type) {
             if (type === 'file') {
                 document.getElementById(`nutri_file_wrapper_${pId}`).classList.remove('hidden');
@@ -1075,195 +1101,95 @@
                 document.getElementById(`nutri_table_wrapper_${pId}`).classList.add('flex');
             }
         }
-
-        function selectTableCell(tdElement, pId) {
-            // Xóa highlight ô cũ
-            if (selectedTableCell) {
-                selectedTableCell.classList.remove('ring-2', 'ring-blue-500', 'ring-inset', 'bg-blue-50');
-            }
-            // Highlight ô mới
-            selectedTableCell = tdElement;
-            selectedTableCell.classList.add('ring-2', 'ring-blue-500', 'ring-inset', 'bg-blue-50');
+        function selectTableCell(td, pId) {
+            if (selectedTableCell) selectedTableCell.classList.remove('ring-2','ring-blue-500','ring-inset','bg-blue-50');
+            selectedTableCell = td;
+            td.classList.add('ring-2','ring-blue-500','ring-inset','bg-blue-50');
         }
-
         function addTableRow(pId) {
-            const table = document.getElementById(`nutri_table_${pId}`);
-            const tbody = table.querySelector('tbody');
-            
-            let numCols = 0;
-            if(tbody.rows.length > 0) {
-                for(let cell of tbody.rows[0].cells) {
-                    numCols += parseInt(cell.getAttribute('colspan') || 1);
-                }
-            } else {
-                numCols = 3;
-            }
-
-            const newRow = tbody.insertRow();
+            const tbody = document.getElementById(`nutri_table_${pId}`).querySelector('tbody');
+            let numCols = 3;
+            if (tbody.rows.length) numCols = Array.from(tbody.rows[0].cells).reduce((s,c) => s + parseInt(c.getAttribute('colspan')||1), 0);
+            const row = tbody.insertRow();
             for (let i = 0; i < numCols; i++) {
-                const newCell = newRow.insertCell();
-                newCell.className = "border border-gray-300 p-0 relative group transition-colors";
-                newCell.onclick = function() { selectTableCell(this, pId); };
-                newCell.innerHTML = `<div contenteditable="true" class="w-full h-full min-h-[40px] p-2 text-sm outline-none focus:bg-yellow-50"></div>`;
+                const cell = row.insertCell();
+                cell.className = 'border border-gray-300 p-0 relative group transition-colors';
+                cell.onclick = function() { selectTableCell(this, pId); };
+                cell.innerHTML = `<div contenteditable="true" class="w-full h-full min-h-[40px] p-2 text-sm outline-none focus:bg-yellow-50"></div>`;
             }
         }
-
         function addTableCol(pId) {
-            const table = document.getElementById(`nutri_table_${pId}`);
-            const tbody = table.querySelector('tbody');
-            
-            if(tbody.rows.length === 0) {
-                addTableRow(pId);
-                return;
-            }
-
-            for (let i = 0; i < tbody.rows.length; i++) {
-                const newCell = tbody.rows[i].insertCell();
-                newCell.className = "border border-gray-300 p-0 relative group transition-colors";
-                newCell.onclick = function() { selectTableCell(this, pId); };
-                newCell.innerHTML = `<div contenteditable="true" class="w-full h-full min-h-[40px] p-2 text-sm outline-none focus:bg-yellow-50"></div>`;
+            const tbody = document.getElementById(`nutri_table_${pId}`).querySelector('tbody');
+            if (!tbody.rows.length) { addTableRow(pId); return; }
+            for (const row of tbody.rows) {
+                const cell = row.insertCell();
+                cell.className = 'border border-gray-300 p-0 relative group transition-colors';
+                cell.onclick = function() { selectTableCell(this, pId); };
+                cell.innerHTML = `<div contenteditable="true" class="w-full h-full min-h-[40px] p-2 text-sm outline-none focus:bg-yellow-50"></div>`;
             }
         }
-
         function mergeCellsRight(pId) {
-            if (!selectedTableCell) {
-                alert("Vui lòng click chọn 1 ô trong bảng để gộp!");
-                return;
-            }
-            if (!selectedTableCell.closest(`#nutri_table_${pId}`)) {
-                alert("Vui lòng chọn ô thuộc bảng này!");
-                return;
-            }
-
-            const nextCell = selectedTableCell.nextElementSibling;
-            if (nextCell) {
-                let currentColspan = parseInt(selectedTableCell.getAttribute('colspan') || 1);
-                let nextColspan = parseInt(nextCell.getAttribute('colspan') || 1);
-                
-                selectedTableCell.setAttribute('colspan', currentColspan + nextColspan);
-                
-                const currentDiv = selectedTableCell.querySelector('div');
-                const nextDiv = nextCell.querySelector('div');
-                if (nextDiv.innerText.trim() !== "") {
-                    currentDiv.innerHTML += " " + nextDiv.innerHTML;
-                }
-                
-                nextCell.remove();
-            } else {
-                alert("Không có ô nào bên phải để gộp!");
-            }
+            if (!selectedTableCell || !selectedTableCell.closest(`#nutri_table_${pId}`)) { alert('Vui lòng chọn ô trong bảng này!'); return; }
+            const next = selectedTableCell.nextElementSibling;
+            if (!next) { alert('Không có ô bên phải!'); return; }
+            selectedTableCell.setAttribute('colspan', (parseInt(selectedTableCell.getAttribute('colspan')||1)) + (parseInt(next.getAttribute('colspan')||1)));
+            const nd = next.querySelector('div');
+            if (nd.innerText.trim()) selectedTableCell.querySelector('div').innerHTML += ' ' + nd.innerHTML;
+            next.remove();
         }
-
         function mergeCellsDown(pId) {
-            if (!selectedTableCell) {
-                alert("Vui lòng click chọn 1 ô trong bảng để gộp!");
-                return;
-            }
-            if (!selectedTableCell.closest(`#nutri_table_${pId}`)) {
-                alert("Vui lòng chọn ô thuộc bảng này!");
-                return;
-            }
-
-            const currentRow = selectedTableCell.parentElement;
-            const nextRow = currentRow.nextElementSibling;
-            
-            if (nextRow) {
-                const cellIndex = Array.from(currentRow.children).indexOf(selectedTableCell);
-                const targetCell = nextRow.children[cellIndex];
-
-                if (targetCell) {
-                    let currentRowspan = parseInt(selectedTableCell.getAttribute('rowspan') || 1);
-                    let targetRowspan = parseInt(targetCell.getAttribute('rowspan') || 1);
-                    
-                    selectedTableCell.setAttribute('rowspan', currentRowspan + targetRowspan);
-                    
-                    const currentDiv = selectedTableCell.querySelector('div');
-                    const targetDiv = targetCell.querySelector('div');
-                    if (targetDiv.innerText.trim() !== "") {
-                        currentDiv.innerHTML += "<br>" + targetDiv.innerHTML;
-                    }
-                    
-                    targetCell.remove();
-                } else {
-                    alert("Không thể gộp do cấu trúc hàng dưới không khớp (có thể đã bị gộp từ trước)!");
-                }
-            } else {
-                alert("Không có ô nào bên dưới để gộp!");
-            }
+            if (!selectedTableCell || !selectedTableCell.closest(`#nutri_table_${pId}`)) { alert('Vui lòng chọn ô trong bảng này!'); return; }
+            const row = selectedTableCell.parentElement;
+            const nextRow = row.nextElementSibling;
+            if (!nextRow) { alert('Không có ô bên dưới!'); return; }
+            const idx = Array.from(row.children).indexOf(selectedTableCell);
+            const target = nextRow.children[idx];
+            if (!target) { alert('Không thể gộp do cấu trúc không khớp!'); return; }
+            selectedTableCell.setAttribute('rowspan', (parseInt(selectedTableCell.getAttribute('rowspan')||1)) + (parseInt(target.getAttribute('rowspan')||1)));
+            const td = target.querySelector('div');
+            if (td.innerText.trim()) selectedTableCell.querySelector('div').innerHTML += '<br>' + td.innerHTML;
+            target.remove();
         }
-
         function unmergeCells(pId) {
-            if (!selectedTableCell) {
-                alert("Vui lòng click chọn 1 ô trong bảng để bỏ gộp!");
-                return;
-            }
-            if (!selectedTableCell.closest(`#nutri_table_${pId}`)) {
-                alert("Vui lòng chọn ô thuộc bảng này!");
-                return;
-            }
-
-            let colspan = parseInt(selectedTableCell.getAttribute('colspan') || 1);
-            let rowspan = parseInt(selectedTableCell.getAttribute('rowspan') || 1);
-
-            if (colspan === 1 && rowspan === 1) {
-                alert("Ô này chưa được gộp!");
-                return;
-            }
-
-            const currentRow = selectedTableCell.parentElement;
-            const rowIndex = Array.from(currentRow.parentElement.children).indexOf(currentRow);
-            const cellIndex = Array.from(currentRow.children).indexOf(selectedTableCell);
-
+            if (!selectedTableCell || !selectedTableCell.closest(`#nutri_table_${pId}`)) { alert('Vui lòng chọn ô trong bảng này!'); return; }
+            const colspan = parseInt(selectedTableCell.getAttribute('colspan')||1);
+            const rowspan = parseInt(selectedTableCell.getAttribute('rowspan')||1);
+            if (colspan === 1 && rowspan === 1) { alert('Ô này chưa được gộp!'); return; }
+            const row = selectedTableCell.parentElement;
+            const rowIdx = Array.from(row.parentElement.children).indexOf(row);
+            const cellIdx = Array.from(row.children).indexOf(selectedTableCell);
             selectedTableCell.removeAttribute('colspan');
             selectedTableCell.removeAttribute('rowspan');
-
             for (let i = 1; i < colspan; i++) {
-                const newCell = currentRow.insertCell(cellIndex + i);
-                newCell.className = "border border-gray-300 p-0 relative group transition-colors";
-                newCell.onclick = function() { selectTableCell(this, pId); };
-                newCell.innerHTML = `<div contenteditable="true" class="w-full h-full min-h-[40px] p-2 text-sm outline-none focus:bg-yellow-50"></div>`;
+                const c = row.insertCell(cellIdx + i);
+                c.className = 'border border-gray-300 p-0 relative group transition-colors';
+                c.onclick = function() { selectTableCell(this, pId); };
+                c.innerHTML = `<div contenteditable="true" class="w-full h-full min-h-[40px] p-2 text-sm outline-none focus:bg-yellow-50"></div>`;
             }
-
-            const tbody = currentRow.parentElement;
+            const tbody = row.parentElement;
             for (let r = 1; r < rowspan; r++) {
-                const targetRow = tbody.children[rowIndex + r];
-                if (targetRow) {
-                    let insertIdx = Math.min(targetRow.cells.length, cellIndex);
-                    for (let c = 0; c < colspan; c++) {
-                        const newCell = targetRow.insertCell(insertIdx + c);
-                        newCell.className = "border border-gray-300 p-0 relative group transition-colors";
-                        newCell.onclick = function() { selectTableCell(this, pId); };
-                        newCell.innerHTML = `<div contenteditable="true" class="w-full h-full min-h-[40px] p-2 text-sm outline-none focus:bg-yellow-50"></div>`;
-                    }
+                const tr = tbody.children[rowIdx + r];
+                if (tr) for (let c = 0; c < colspan; c++) {
+                    const nc = tr.insertCell(Math.min(tr.cells.length, cellIdx) + c);
+                    nc.className = 'border border-gray-300 p-0 relative group transition-colors';
+                    nc.onclick = function() { selectTableCell(this, pId); };
+                    nc.innerHTML = `<div contenteditable="true" class="w-full h-full min-h-[40px] p-2 text-sm outline-none focus:bg-yellow-50"></div>`;
                 }
             }
         }
 
-        // Tự động tính CBM dựa trên Kích thước thùng
         function calculateCBM(pId) {
-            const length = parseFloat(document.getElementById(`carton_l_${pId}`).value) || 0;
-            const width = parseFloat(document.getElementById(`carton_w_${pId}`).value) || 0;
-            const height = parseFloat(document.getElementById(`carton_h_${pId}`).value) || 0;
-            
-            // Tính Thể tích CBM (m3) = Dài x Rộng x Cao
-            const cbm = (length * width * height).toFixed(4); // Lấy 4 chữ số thập phân
-            
-            // Cập nhật ô CBM nếu có giá trị > 0
+            const l = parseFloat(document.getElementById(`carton_l_${pId}`).value) || 0;
+            const w = parseFloat(document.getElementById(`carton_w_${pId}`).value) || 0;
+            const h = parseFloat(document.getElementById(`carton_h_${pId}`).value) || 0;
+            const cbm = (l * w * h).toFixed(4);
             document.getElementById(`cbm_${pId}`).value = cbm > 0 ? cbm : '';
         }
 
-        // Tắt bật ô nhập liệu Phương thức thanh toán "Khác"
-        function toggleOtherPayment(checkbox, pId) {
-            const input = document.getElementById(`payment_other_text_${pId}`);
-            if(checkbox.checked) {
-                input.classList.remove('hidden');
-                input.disabled = false;
-                input.focus();
-            } else {
-                input.classList.add('hidden');
-                input.disabled = true;
-                input.value = '';
-            }
+        function toggleOtherPayment(cb, pId) {
+            const inp = document.getElementById(`payment_other_text_${pId}`);
+            if (cb.checked) { inp.classList.remove('hidden'); inp.disabled = false; inp.focus(); }
+            else { inp.classList.add('hidden'); inp.disabled = true; inp.value = ''; }
         }
     </script>
 </body>
